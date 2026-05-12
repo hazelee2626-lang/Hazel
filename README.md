@@ -1,1 +1,1 @@
-# Hazel
+# Check Manager
