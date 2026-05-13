@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Today's Checklist</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+–bg: #e9e7e2;
+–card: #1a1a1a;
+–card2: #111111;
+–border: #2a2a2a;
+–border2: #333;
+–green: #28c840;
+–red: #ff5f57;
+–yellow: #febc2e;
+–text: #ffffff;
+–text-dim: #888;
+–text-dimmer: #555;
+–text-muted: #444;
+–input-bg: #252525;
+}
+
+body {
+font-family: ‘SF Mono’, ‘Monaco’, ‘Menlo’, ‘Consolas’, ‘Courier New’, monospace;
+background: var(–bg);
+min-height: 100vh;
+padding: 24px 16px 130px;
+}
+
+/* ── 헤더 ── */
+.page-header {
+text-align: center;
+margin-bottom: 20px;
+}
+.page-title {
+font-size: 26px;
+font-weight: 800;
+color: #111;
+letter-spacing: -0.5px;
+}
+.page-sub {
+font-size: 12px;
+color: var(–text-dim);
+margin-top: 3px;
+letter-spacing: 0.03em;
+}
+.date-tag {
+text-align: center;
+font-size: 11px;
+color: var(–text-dimmer);
+letter-spacing: 0.12em;
+margin-bottom: 18px;
+}
+
+/* ── 터미널 카드 공통 ── */
+.terminal {
+background: var(–card);
+border-radius: 11px;
+overflow: hidden;
+margin-bottom: 14px;
+box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.tbar {
+display: flex;
+align-items: center;
+padding: 9px 14px;
+border-bottom: 1px solid var(–border);
+gap: 8px;
+}
+.tl-wrap { display: flex; gap: 5px; }
+.tl { width: 11px; height: 11px; border-radius: 50%; }
+.tl-r { background: var(–red); }
+.tl-y { background: var(–yellow); }
+.tl-g { background: var(–green); }
+.tbar-title {
+font-size: 11px;
+color: var(–text-dim);
+letter-spacing: 0.12em;
+}
+
+/* ── 진행 리포트 ── */
+.pr-body {
+padding: 14px 16px;
+font-size: 12px;
+color: #ccc;
+line-height: 2;
+}
+.pr-row { display: flex; align-items: center; gap: 6px; }
+.pr-k { color: var(–text-dim); min-width: 110px; }
+.pr-v { color: var(–text); }
+.pr-v.g { color: var(–green); font-weight: 700; }
+.pr-bar-row {
+display: flex;
+align-items: center;
+gap: 8px;
+margin: 4px 0;
+}
+.pr-bar {
+flex: 1;
+height: 13px;
+background: #2a2a2a;
+border-radius: 2px;
+overflow: hidden;
+border: 1px solid #3a3a3a;
+}
+.pr-bar-fill {
+height: 100%;
+background: var(–green);
+transition: width 0.4s ease;
+background-image: repeating-linear-gradient(
+90deg, transparent, transparent 6px,
+rgba(0,0,0,0.15) 6px, rgba(0,0,0,0.15) 7px
+);
+}
+.pr-pct { color: var(–green); font-weight: 700; min-width: 38px; text-align: right; }
+.pr-groups { margin-top: 2px; }
+.pr-g-row {
+display: flex;
+align-items: center;
+gap: 6px;
+padding: 1px 0;
+}
+.pr-g-dot { color: var(–text-dimmer); }
+.pr-g-name { color: #bbb; min-width: 56px; }
+.pr-g-bar {
+flex: 1;
+height: 9px;
+background: #2a2a2a;
+border-radius: 2px;
+overflow: hidden;
+border: 1px solid #333;
+}
+.pr-g-fill {
+height: 100%;
+background: var(–green);
+transition: width 0.4s ease;
+background-image: repeating-linear-gradient(
+90deg, transparent, transparent 4px,
+rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px
+);
+}
+.pr-g-stat { color: var(–text-dim); font-size: 11px; min-width: 72px; text-align: right; }
+.pr-prompt { color: var(–text-muted); margin-top: 4px; }
+
+/* ── CLI 바 ── */
+.cli-bar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 12px;
+color: var(–text-dimmer);
+padding: 8px 2px;
+}
+.cli-cmd { color: var(–green); }
+.cli-new-btn {
+background: none;
+border: 1px solid #555;
+color: var(–text-dim);
+font-family: inherit;
+font-size: 11px;
+padding: 5px 10px;
+border-radius: 4px;
+cursor: pointer;
+transition: all 0.15s;
+}
+.cli-new-btn:hover { color: var(–green); border-color: var(–green); }
+
+/* ── 새 그룹 폼 ── */
+.new-group-form {
+background: var(–card);
+border-radius: 10px;
+padding: 14px 16px;
+margin-bottom: 14px;
+display: none;
+gap: 8px;
+flex-direction: column;
+}
+.new-group-form.show { display: flex; }
+.ng-input {
+background: var(–input-bg);
+border: 1px solid var(–border2);
+color: var(–text);
+font-family: inherit;
+font-size: 13px;
+padding: 9px 12px;
+border-radius: 5px;
+outline: none;
+transition: border-color 0.15s;
+}
+.ng-input:focus { border-color: var(–green); }
+.ng-input::placeholder { color: var(–text-dimmer); }
+.ng-btns { display: flex; gap: 8px; }
+.ng-ok {
+background: var(–green);
+border: none;
+color: #000;
+font-family: inherit;
+font-size: 12px;
+font-weight: 700;
+padding: 8px 16px;
+border-radius: 4px;
+cursor: pointer;
+}
+.ng-cancel {
+background: var(–input-bg);
+border: 1px solid var(–border2);
+color: var(–text-dim);
+font-family: inherit;
+font-size: 12px;
+padding: 8px 16px;
+border-radius: 4px;
+cursor: pointer;
+}
+
+/* ── 섹션 헤더 ── */
+.sec-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 11px 16px 10px;
+border-bottom: 1px solid var(–border);
+}
+.sec-path { font-size: 13px; color: #aaa; letter-spacing: 0.04em; }
+.sec-right { display: flex; align-items: center; gap: 10px; }
+.sec-count { font-size: 12px; color: var(–text-dim); }
+.sec-add-btn {
+background: none;
+border: none;
+color: var(–text-dim);
+font-family: inherit;
+font-size: 17px;
+cursor: pointer;
+padding: 0 2px;
+line-height: 1;
+transition: color 0.15s;
+}
+.sec-add-btn:hover { color: var(–green); }
+.sec-del-btn {
+background: none;
+border: none;
+color: #3a3a3a;
+font-family: inherit;
+font-size: 12px;
+cursor: pointer;
+padding: 0 2px;
+transition: color 0.15s;
+}
+.sec-del-btn:hover { color: var(–red); }
+
+/* ── 할일 아이템 ── */
+.task-item {
+display: flex;
+align-items: flex-start;
+padding: 11px 16px;
+border-bottom: 1px solid #222;
+gap: 8px;
+position: relative;
+transition: background 0.1s;
+}
+.task-item:last-of-type { border-bottom: none; }
+.task-item:hover { background: #1e1e1e; }
+.task-item:hover .task-actions { opacity: 1; }
+
+.task-cb {
+font-size: 13px;
+min-width: 26px;
+cursor: pointer;
+padding-top: 1px;
+flex-shrink: 0;
+user-select: none;
+transition: color 0.15s;
+}
+.task-cb.done { color: var(–green); }
+.task-cb.todo { color: #555; }
+
+.task-body { flex: 1; min-width: 0; cursor: pointer; }
+.task-name {
+font-size: 13px;
+color: var(–text);
+line-height: 1.4;
+word-break: break-all;
+}
+.task-name.done {
+text-decoration: line-through;
+color: #4a4a4a;
+}
+.task-ts { font-size: 11px; color: #4a4a4a; margin-top: 3px; }
+
+.task-actions {
+display: flex;
+gap: 5px;
+flex-shrink: 0;
+opacity: 0;
+transition: opacity 0.15s;
+padding-top: 1px;
+}
+.t-focus-btn {
+background: none;
+border: 1px solid var(–green);
+color: var(–green);
+font-family: inherit;
+font-size: 10px;
+padding: 3px 7px;
+border-radius: 3px;
+cursor: pointer;
+opacity: 0.75;
+transition: opacity 0.15s, background 0.15s;
+}
+.t-focus-btn:hover { opacity: 1; background: rgba(40,200,64,0.1); }
+.t-del-btn {
+background: none;
+border: 1px solid #3a3a3a;
+color: #555;
+font-family: inherit;
+font-size: 10px;
+padding: 3px 7px;
+border-radius: 3px;
+cursor: pointer;
+transition: color 0.15s, border-color 0.15s;
+}
+.t-del-btn:hover { color: var(–red); border-color: var(–red); }
+
+/* ── 추가 폼 ── */
+.add-form {
+padding: 10px 16px;
+border-top: 1px solid var(–border);
+display: none;
+gap: 8px;
+}
+.add-form.show { display: flex; }
+.add-input {
+flex: 1;
+background: var(–input-bg);
+border: 1px solid var(–border2);
+color: var(–text);
+font-family: inherit;
+font-size: 13px;
+padding: 8px 10px;
+border-radius: 4px;
+outline: none;
+transition: border-color 0.15s;
+}
+.add-input:focus { border-color: var(–green); }
+.add-input::placeholder { color: var(–text-dimmer); }
+.add-ok {
+background: var(–green);
+border: none;
+color: #000;
+font-family: inherit;
+font-size: 13px;
+font-weight: 700;
+padding: 8px 14px;
+border-radius: 4px;
+cursor: pointer;
+}
+
+/* ── 빈 상태 ── */
+.empty-state {
+padding: 18px 16px;
+text-align: center;
+font-size: 12px;
+color: #3a3a3a;
+}
+
+/* ── 하단 버튼 ── */
+.bottom-bar {
+position: fixed;
+bottom: 0; left: 0; right: 0;
+display: flex;
+gap: 12px;
+padding: 14px 16px 30px;
+background: linear-gradient(transparent, var(–bg) 28%);
+}
+.btn-cert {
+flex: 1;
+padding: 14px;
+background: #fff;
+border: none;
+border-radius: 11px;
+font-family: inherit;
+font-size: 13px;
+color: #333;
+cursor: pointer;
+box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+display: flex; align-items: center; justify-content: center; gap: 5px;
+transition: background 0.15s;
+}
+.btn-cert:hover { background: #f5f5f5; }
+.btn-list {
+flex: 1;
+padding: 14px;
+background: var(–card);
+border: none;
+border-radius: 11px;
+font-family: inherit;
+font-size: 13px;
+color: #ccc;
+cursor: pointer;
+box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+display: flex; align-items: center; justify-content: center; gap: 5px;
+transition: background 0.15s;
+}
+.btn-list:hover { background: #222; }
+
+/* ── 초집중 오버레이 ── */
+.focus-overlay {
+display: none;
+position: fixed;
+inset: 0;
+background: #0a0a0a;
+z-index: 1000;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 24px;
+}
+.focus-overlay.show { display: flex; }
+
+.focus-card {
+width: 100%;
+max-width: 380px;
+background: var(–card);
+border-radius: 13px;
+overflow: hidden;
+box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.focus-tbar {
+display: flex;
+align-items: center;
+padding: 10px 14px;
+border-bottom: 1px solid var(–border);
+gap: 8px;
+}
+.focus-tbar-title { font-size: 11px; color: var(–text-dim); letter-spacing: 0.12em; }
+.focus-close-btn {
+margin-left: auto;
+background: none;
+border: none;
+color: #555;
+font-family: inherit;
+font-size: 15px;
+cursor: pointer;
+padding: 0 2px;
+transition: color 0.15s;
+}
+.focus-close-btn:hover { color: var(–red); }
+
+.focus-body {
+padding: 28px 22px 24px;
+text-align: center;
+}
+.focus-cmd { font-size: 11px; color: var(–text-dimmer); letter-spacing: 0.12em; margin-bottom: 10px; }
+.focus-task { font-size: 18px; color: var(–text); line-height: 1.4; margin-bottom: 30px; font-weight: 600; }
+
+.focus-timer {
+font-size: 56px;
+color: var(–green);
+letter-spacing: 0.04em;
+margin-bottom: 6px;
+font-weight: 300;
+}
+.focus-timer-state { font-size: 11px; color: var(–text-dimmer); margin-bottom: 20px; letter-spacing: 0.12em; }
+
+.focus-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 18px; }
+.f-btn {
+font-family: inherit;
+font-size: 13px;
+padding: 10px 22px;
+border-radius: 6px;
+cursor: pointer;
+border: none;
+transition: all 0.15s;
+}
+.f-btn-start { background: var(–green); color: #000; font-weight: 700; }
+.f-btn-start:hover { background: #22b035; }
+.f-btn-reset { background: #252525; color: var(–text-dim); border: 1px solid var(–border2); }
+.f-btn-reset:hover { color: var(–text); }
+
+.focus-presets { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+.f-preset {
+font-family: inherit;
+font-size: 11px;
+padding: 5px 12px;
+border-radius: 4px;
+cursor: pointer;
+background: #222;
+border: 1px solid var(–border2);
+color: #666;
+transition: all 0.15s;
+}
+.f-preset:hover { color: var(–green); border-color: var(–green); }
+.f-preset.on { background: rgba(40,200,64,0.1); color: var(–green); border-color: var(–green); }
+
+.focus-done {
+width: 100%;
+padding: 13px;
+background: var(–green);
+border: none;
+border-radius: 7px;
+font-family: inherit;
+font-size: 14px;
+font-weight: 700;
+color: #000;
+cursor: pointer;
+transition: background 0.15s;
+}
+.focus-done:hover { background: #22b035; }
+
+/* ── 모달 시트 ── */
+.modal-bg {
+display: none;
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,0.55);
+z-index: 900;
+align-items: flex-end;
+}
+.modal-bg.show { display: flex; }
+.modal-sheet {
+width: 100%;
+background: var(–card);
+border-radius: 16px 16px 0 0;
+padding: 18px 18px 36px;
+max-height: 80vh;
+overflow-y: auto;
+}
+.modal-handle {
+width: 36px; height: 4px;
+background: #444;
+border-radius: 2px;
+margin: 0 auto 18px;
+}
+.modal-title {
+font-size: 15px;
+color: var(–text);
+margin-bottom: 14px;
+font-weight: 700;
+letter-spacing: 0.02em;
+}
+.modal-code {
+background: #111;
+border-radius: 8px;
+padding: 14px;
+font-family: inherit;
+font-size: 12px;
+color: #bbb;
+line-height: 1.9;
+white-space: pre-wrap;
+word-break: break-all;
+margin-bottom: 14px;
+min-height: 80px;
+border: 1px solid #222;
+}
+.modal-copy {
+width: 100%;
+padding: 13px;
+background: var(–green);
+border: none;
+border-radius: 8px;
+font-family: inherit;
+font-size: 13px;
+font-weight: 700;
+color: #000;
+cursor: pointer;
+margin-bottom: 8px;
+transition: background 0.15s;
+}
+.modal-copy:hover { background: #22b035; }
+.modal-btns { display: flex; gap: 8px; }
+.modal-sec-btn {
+flex: 1;
+padding: 11px;
+background: #222;
+border: 1px solid var(–border2);
+border-radius: 7px;
+font-family: inherit;
+font-size: 12px;
+color: var(–text-dim);
+cursor: pointer;
+transition: color 0.15s;
+}
+.modal-sec-btn:hover { color: var(–text); }
+
+/* ── 토스트 ── */
+.toast {
+position: fixed;
+bottom: 96px;
+left: 50%;
+transform: translateX(-50%) translateY(14px);
+background: var(–green);
+color: #000;
+font-family: inherit;
+font-size: 12px;
+font-weight: 700;
+padding: 9px 18px;
+border-radius: 20px;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.25s, transform 0.25s;
+white-space: nowrap;
+z-index: 2000;
+letter-spacing: 0.05em;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-title">체크리스트</div>
+  <div class="page-sub">Focus on what matters. One task at a time.</div>
+</div>
+<div class="date-tag" id="dateTag"></div>
+
+<!-- 진행 리포트 -->
+
+<div class="terminal">
+  <div class="tbar">
+    <div class="tl-wrap"><div class="tl tl-r"></div><div class="tl tl-y"></div><div class="tl tl-g"></div></div>
+    <span class="tbar-title">PROGRESS_REPORT.EXE</span>
+  </div>
+  <div class="pr-body" id="prBody"></div>
+</div>
+
+<!-- CLI 바 -->
+
+<div class="cli-bar">
+  <span><span class="cli-cmd">$</span> ls -la ~/groups/</span>
+  <button class="cli-new-btn" onclick="toggleNewGroupForm()">+ mkdir new-group</button>
+</div>
+
+<!-- 새 그룹 폼 -->
+
+<div class="new-group-form" id="newGroupForm">
+  <input class="ng-input" id="ngInput" placeholder="~/그룹명/ (예: 업무, 1%, 루틴)"
+         onkeydown="if(event.key==='Enter')addGroup()">
+  <div class="ng-btns">
+    <button class="ng-ok" onclick="addGroup()">만들기</button>
+    <button class="ng-cancel" onclick="toggleNewGroupForm()">취소</button>
+  </div>
+</div>
+
+<!-- 섹션들 -->
+
+<div id="sections"></div>
+
+<!-- 하단 버튼 -->
+
+<div class="bottom-bar">
+  <button class="btn-cert" onclick="openCert()">📋 오늘 할일 인증하기</button>
+  <button class="btn-list" onclick="openList()">☰ 리스트업</button>
+</div>
+
+<!-- 초집중 오버레이 -->
+
+<div class="focus-overlay" id="focusOverlay">
+  <div class="focus-card">
+    <div class="focus-tbar">
+      <div class="tl-wrap"><div class="tl tl-r"></div><div class="tl tl-y"></div><div class="tl tl-g"></div></div>
+      <span class="focus-tbar-title">FOCUS_MODE.EXE</span>
+      <button class="focus-close-btn" onclick="closeFocus()">✕</button>
+    </div>
+    <div class="focus-body">
+      <div class="focus-cmd">$ sudo focus --task</div>
+      <div class="focus-task" id="focusTask"></div>
+      <div class="focus-timer" id="focusTimer">25:00</div>
+      <div class="focus-timer-state" id="focusState">READY</div>
+      <div class="focus-controls">
+        <button class="f-btn f-btn-start" id="focusStartBtn" onclick="toggleTimer()">▶ START</button>
+        <button class="f-btn f-btn-reset" onclick="resetTimer()">↺ RESET</button>
+      </div>
+      <div class="focus-presets">
+        <button class="f-preset on" onclick="setTime(25)" data-m="25">25분</button>
+        <button class="f-preset" onclick="setTime(15)" data-m="15">15분</button>
+        <button class="f-preset" onclick="setTime(10)" data-m="10">10분</button>
+        <button class="f-preset" onclick="setTime(5)" data-m="5">5분</button>
+      </div>
+      <button class="focus-done" onclick="doneTask()">✓ 완료로 체크하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 인증 모달 -->
+
+<div class="modal-bg" id="certModal" onclick="closeCert(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📋 오늘 할일 인증하기</div>
+    <div class="modal-code" id="certCode"></div>
+    <button class="modal-copy" onclick="copyCert()">복사하기</button>
+    <div class="modal-btns">
+      <button class="modal-sec-btn" onclick="closeCert()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 리스트업 모달 -->
+
+<div class="modal-bg" id="listModal" onclick="closeList(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">☰ 리스트업</div>
+    <div class="modal-code" id="listCode"></div>
+    <button class="modal-copy" onclick="copyList()">복사하기</button>
+    <div class="modal-btns">
+      <button class="modal-sec-btn" onclick="carryover()">⏩ 미완료 이월</button>
+      <button class="modal-sec-btn" onclick="closeList()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── 날짜 유틸 ───
+const pad = n => String(n).padStart(2,'0');
+function getMMDD() {
+  const d = new Date();
+  return pad(d.getMonth()+1) + pad(d.getDate());
+}
+function getDateFull() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function getTS() {
+  const d = new Date();
+  return `${getDateFull()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ─── 스토리지 ───
+const KEY = 'hazel_cl_v3';
+function load() {
+  try { const r = localStorage.getItem(KEY); if(r) return JSON.parse(r); } catch(e) {}
+  return {
+    date: getMMDD(),
+    groups: [
+      { id:'g1', name:'1%', tasks:[] },
+      { id:'g2', name:'루틴', tasks:[] },
+      { id:'g3', name:'자기전', tasks:[] }
+    ]
+  };
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
+
+let D = load();
+
+// 날짜 바뀌면 완료항목 제거 + 날짜 업데이트
+if (D.date !== getMMDD()) {
+  D.groups.forEach(g => { g.tasks = g.tasks.filter(t => !t.done); });
+  D.date = getMMDD();
+  save();
+}
+
+// ─── 렌더 ───
+function render() {
+  renderDate();
+  renderProgress();
+  renderSections();
+  save();
+}
+
+function renderDate() {
+  document.getElementById('dateTag').textContent = `# ${getMMDD()} — ${getDateFull()}`;
+}
+
+function renderProgress() {
+  const all = D.groups.flatMap(g => g.tasks);
+  const total = all.length;
+  const done = all.filter(t => t.done).length;
+  const rem = total - done;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const ts = getTS();
+
+  const gRows = D.groups.map(g => {
+    const gt = g.tasks.length, gd = g.tasks.filter(t=>t.done).length;
+    const gp = gt > 0 ? Math.round(gd/gt*100) : 0;
+    return `<div class="pr-g-row">
+      <span class="pr-g-dot">·</span>
+      <span class="pr-g-name">${g.name}</span>
+      <div class="pr-g-bar"><div class="pr-g-fill" style="width:${gp}%"></div></div>
+      <span class="pr-g-stat">${gp}% (${gd}/${gt})</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('prBody').innerHTML = `
+    <div class="pr-row"><span class="pr-k">$ run</span><span class="pr-v">--mode=summary --timestamp=${ts}</span></div>
+    <br>
+    <div class="pr-row"><span class="pr-k">STATUS</span><span class="pr-v">: RUNNING</span></div>
+    <div class="pr-row"><span class="pr-k">TOTAL_TASKS</span><span class="pr-v">: ${total}</span></div>
+    <div class="pr-row"><span class="pr-k">COMPLETED</span><span class="pr-v g">: ${done}</span></div>
+    <div class="pr-row"><span class="pr-k">REMAINING</span><span class="pr-v">: ${rem}</span></div>
+    <br>
+    <div class="pr-bar-row"><span class="pr-k">PROGRESS</span><div class="pr-bar"><div class="pr-bar-fill" style="width:${pct}%"></div></div><span class="pr-pct">${pct}%</span></div>
+    <br>
+    <div class="pr-groups"><div class="pr-row"><span style="color:var(--text-dimmer)">> group_breakdown:</span></div>${gRows}</div>
+    <div class="pr-prompt">> </div>
+  `;
+}
+
+function renderSections() {
+  const cont = document.getElementById('sections');
+  cont.innerHTML = '';
+  D.groups.forEach(g => {
+    const done = g.tasks.filter(t=>t.done).length;
+    const total = g.tasks.length;
+    const el = document.createElement('div');
+    el.className = 'terminal';
+
+    // 헤더
+    const hdr = document.createElement('div');
+    hdr.className = 'sec-header';
+    hdr.innerHTML = `
+      <span class="sec-path">~/${g.name}/</span>
+      <div class="sec-right">
+        <span class="sec-count">${done}/${total}</span>
+        <button class="sec-add-btn" onclick="toggleAdd('${g.id}')">+</button>
+        <button class="sec-del-btn" onclick="deleteGroup('${g.id}')">×</button>
+      </div>`;
+    el.appendChild(hdr);
+
+    // 빈 상태
+    if (total === 0) {
+      const emp = document.createElement('div');
+      emp.className = 'empty-state';
+      emp.textContent = '> 할일을 추가하세요 (+)';
+      el.appendChild(emp);
+    }
+
+    // 할일들 — 미완료 먼저, 완료 나중
+    const sorted = [...g.tasks.filter(t=>!t.done), ...g.tasks.filter(t=>t.done)];
+    sorted.forEach(task => {
+      const row = document.createElement('div');
+      row.className = 'task-item';
+      row.innerHTML = `
+        <span class="task-cb ${task.done?'done':'todo'}" onclick="toggleTask('${g.id}','${task.id}')">${task.done?'[✓]':'[ ]'}</span>
+        <div class="task-body" onclick="toggleTask('${g.id}','${task.id}')">
+          <div class="task-name ${task.done?'done':''}">${task.name}</div>
+          ${task.done ? `<div class="task-ts"># done · ${task.doneAt}</div>` : ''}
+        </div>
+        <div class="task-actions">
+          ${!task.done ? `<button class="t-focus-btn" onclick="openFocus('${g.id}','${task.id}');event.stopPropagation()">▶ 집중</button>` : ''}
+          <button class="t-del-btn" onclick="deleteTask('${g.id}','${task.id}');event.stopPropagation()">✕</button>
+        </div>`;
+      el.appendChild(row);
+    });
+
+    // 추가 폼
+    const form = document.createElement('div');
+    form.className = 'add-form';
+    form.id = `af_${g.id}`;
+    form.innerHTML = `
+      <input class="add-input" id="ai_${g.id}" placeholder="$ echo 'new task'"
+             onkeydown="if(event.key==='Enter')addTask('${g.id}')">
+      <button class="add-ok" onclick="addTask('${g.id}')">+</button>`;
+    el.appendChild(form);
+
+    cont.appendChild(el);
+  });
+}
+
+// ─── 할일 CRUD ───
+function toggleTask(gid, tid) {
+  const g = D.groups.find(g=>g.id===gid);
+  const t = g.tasks.find(t=>t.id===tid);
+  t.done = !t.done;
+  t.doneAt = t.done ? getTS() : null;
+  render();
+}
+function deleteTask(gid, tid) {
+  const g = D.groups.find(g=>g.id===gid);
+  g.tasks = g.tasks.filter(t=>t.id!==tid);
+  render();
+}
+function addTask(gid) {
+  const inp = document.getElementById(`ai_${gid}`);
+  const name = inp.value.trim();
+  if (!name) return;
+  D.groups.find(g=>g.id===gid).tasks.push({ id:'t'+Date.now(), name, done:false, doneAt:null });
+  inp.value = '';
+  render();
+  document.getElementById(`af_${gid}`).classList.add('show');
+  setTimeout(()=>document.getElementById(`ai_${gid}`)?.focus(),0);
+}
+function toggleAdd(gid) {
+  const f = document.getElementById(`af_${gid}`);
+  f.classList.toggle('show');
+  if (f.classList.contains('show')) setTimeout(()=>document.getElementById(`ai_${gid}`)?.focus(),0);
+}
+
+// ─── 그룹 ───
+function toggleNewGroupForm() {
+  const f = document.getElementById('newGroupForm');
+  f.classList.toggle('show');
+  if (f.classList.contains('show')) setTimeout(()=>document.getElementById('ngInput').focus(),0);
+}
+function addGroup() {
+  const inp = document.getElementById('ngInput');
+  const name = inp.value.trim().replace(/^~\/|\/$/g,'');
+  if (!name) return;
+  D.groups.push({ id:'g'+Date.now(), name, tasks:[] });
+  inp.value = '';
+  document.getElementById('newGroupForm').classList.remove('show');
+  render();
+}
+function deleteGroup(gid) {
+  if (D.groups.length <= 1) { toast('그룹은 최소 1개 필요해요'); return; }
+  D.groups = D.groups.filter(g=>g.id!==gid);
+  render();
+}
+
+// ─── 초집중 ───
+let fGid=null, fTid=null, fSec=25*60, fRunning=false, fInterval=null, fSelMin=25;
+
+function openFocus(gid, tid) {
+  fGid=gid; fTid=tid;
+  const t = D.groups.find(g=>g.id===gid).tasks.find(t=>t.id===tid);
+  document.getElementById('focusTask').textContent = t.name;
+  setTime(25);
+  document.getElementById('focusOverlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeFocus() {
+  clearInterval(fInterval); fRunning=false; fInterval=null;
+  document.getElementById('focusOverlay').classList.remove('show');
+  document.body.style.overflow='';
+  document.getElementById('focusStartBtn').textContent='▶ START';
+}
+function setTime(min) {
+  clearInterval(fInterval); fRunning=false; fInterval=null;
+  fSelMin=min; fSec=min*60;
+  updateTimerDisplay();
+  document.getElementById('focusStartBtn').textContent='▶ START';
+  document.getElementById('focusState').textContent='READY';
+  document.querySelectorAll('.f-preset').forEach(b=>{
+    b.classList.toggle('on', parseInt(b.dataset.m)===min);
+  });
+}
+function toggleTimer() {
+  if (fRunning) {
+    clearInterval(fInterval); fRunning=false;
+    document.getElementById('focusStartBtn').textContent='▶ RESUME';
+    document.getElementById('focusState').textContent='PAUSED';
+  } else {
+    fRunning=true;
+    document.getElementById('focusStartBtn').textContent='⏸ PAUSE';
+    document.getElementById('focusState').textContent='RUNNING...';
+    fInterval=setInterval(()=>{
+      fSec--;
+      updateTimerDisplay();
+      if (fSec<=0) {
+        clearInterval(fInterval); fRunning=false;
+        document.getElementById('focusState').textContent='✓ DONE!';
+        document.getElementById('focusStartBtn').textContent='▶ START';
+        toast('⏰ 집중 완료!');
+      }
+    },1000);
+  }
+}
+function resetTimer() { setTime(fSelMin); }
+function updateTimerDisplay() {
+  const m=pad(Math.floor(fSec/60)), s=pad(fSec%60);
+  document.getElementById('focusTimer').textContent=`${m}:${s}`;
+}
+function doneTask() {
+  if (fGid && fTid) {
+    const t = D.groups.find(g=>g.id===fGid).tasks.find(t=>t.id===fTid);
+    t.done=true; t.doneAt=getTS();
+    render();
+  }
+  closeFocus();
+  toast('✓ 완료!');
+}
+
+// ─── 인증 ───
+function buildCert() {
+  const lines = [`#${getMMDD()} #완료한일\n`];
+  D.groups.forEach(g=>{
+    if (!g.tasks.length) return;
+    lines.push(`✅ [${g.name}]`);
+    g.tasks.filter(t=>t.done).forEach(t=>lines.push(`- [x] ${t.name}`));
+    g.tasks.filter(t=>!t.done).forEach(t=>lines.push(`- [ ] ${t.name}`));
+    lines.push('');
+  });
+  const co = D.groups.flatMap(g=>g.tasks.filter(t=>!t.done));
+  if (co.length) { lines.push('⏩ [내일 이월]'); co.forEach(t=>lines.push(`- [ ] ${t.name}`)); }
+  return lines.join('\n');
+}
+function openCert() {
+  document.getElementById('certCode').textContent = buildCert();
+  document.getElementById('certModal').classList.add('show');
+}
+function closeCert(e) {
+  if (!e || e.target===e.currentTarget || e.target.classList.contains('modal-sec-btn'))
+    document.getElementById('certModal').classList.remove('show');
+}
+function copyCert() {
+  navigator.clipboard.writeText(document.getElementById('certCode').textContent)
+    .then(()=>toast('📋 복사 완료!'));
+}
+
+// ─── 리스트업 ───
+function buildList() {
+  const lines = [`#${getMMDD()} #해야할일\n`];
+  D.groups.forEach(g=>{
+    if (!g.tasks.length) return;
+    lines.push(`[${g.name}]`);
+    g.tasks.filter(t=>!t.done).forEach(t=>lines.push(`- [ ] ${t.name}`));
+    g.tasks.filter(t=>t.done).forEach(t=>lines.push(`- [x] ${t.name}`));
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+function openList() {
+  document.getElementById('listCode').textContent = buildList();
+  document.getElementById('listModal').classList.add('show');
+}
+function closeList(e) {
+  if (!e || e.target===e.currentTarget || e.target.classList.contains('modal-sec-btn'))
+    document.getElementById('listModal').classList.remove('show');
+}
+function copyList() {
+  navigator.clipboard.writeText(document.getElementById('listCode').textContent)
+    .then(()=>toast('📋 복사 완료!'));
+}
+function carryover() {
+  D.groups.forEach(g=>{ g.tasks=g.tasks.filter(t=>!t.done); });
+  render(); closeList();
+  toast('⏩ 미완료 이월 완료!');
+}
+
+// ─── 토스트 ───
+function toast(msg) {
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ─── 초기 실행 ───
+render();
+</script>
+
+</body>
+</html>
