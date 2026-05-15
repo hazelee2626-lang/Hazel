@@ -4,654 +4,305 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Today's Checklist</title>
+<title>체크리스트</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#e9e7e2;--card:#1a1a1a;--border:#2a2a2a;--border2:#333;
+  --green:#28c840;--red:#ff5f57;--yellow:#febc2e;
+  --text:#fff;--dim:#888;--dimmer:#555;--muted:#444;--input:#252525;
+}
+body{font-family:'SF Mono','Monaco','Menlo','Consolas',monospace;background:var(--bg);min-height:100vh;}
 
-:root {
-–bg: #e9e7e2;
-–card: #1a1a1a;
-–card2: #111111;
-–border: #2a2a2a;
-–border2: #333;
-–green: #28c840;
-–red: #ff5f57;
-–yellow: #febc2e;
-–text: #ffffff;
-–text-dim: #888;
-–text-dimmer: #555;
-–text-muted: #444;
-–input-bg: #252525;
-}
+/* ── 유저바 ── */
+.user-bar{background:var(–card);padding:10px 16px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(–border);}
+.user-name{font-size:12px;color:#bbb;flex:1;}
+.user-date{font-size:11px;color:var(–dimmer);}
 
-body {
-font-family: ‘SF Mono’, ‘Monaco’, ‘Menlo’, ‘Consolas’, ‘Courier New’, monospace;
-background: var(–bg);
-min-height: 100vh;
-padding: 24px 16px 130px;
-}
+/* ── 탭 ── */
+.tab-bar{display:flex;background:var(–card);border-bottom:1px solid var(–border);position:sticky;top:0;z-index:100;}
+.tab-btn{flex:1;padding:10px 4px 9px;background:none;border:none;font-family:inherit;font-size:11px;color:var(–dimmer);cursor:pointer;letter-spacing:.06em;border-bottom:2px solid transparent;transition:all .15s;}
+.tab-btn.on{color:var(–green);border-bottom-color:var(–green);}
 
-/* ── 헤더 ── */
-.page-header {
-text-align: center;
-margin-bottom: 20px;
-}
-.page-title {
-font-size: 26px;
-font-weight: 800;
-color: #111;
-letter-spacing: -0.5px;
-}
-.page-sub {
-font-size: 12px;
-color: var(–text-dim);
-margin-top: 3px;
-letter-spacing: 0.03em;
-}
-.date-tag {
-text-align: center;
-font-size: 11px;
-color: var(–text-dimmer);
-letter-spacing: 0.12em;
-margin-bottom: 18px;
-}
+/* ── 탭 컨텐츠 ── */
+.tab-content{display:none;padding:18px 16px 130px;}
+.tab-content.on{display:block;}
 
-/* ── 터미널 카드 공통 ── */
-.terminal {
-background: var(–card);
-border-radius: 11px;
-overflow: hidden;
-margin-bottom: 14px;
-box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-}
-.tbar {
-display: flex;
-align-items: center;
-padding: 9px 14px;
-border-bottom: 1px solid var(–border);
-gap: 8px;
-}
-.tl-wrap { display: flex; gap: 5px; }
-.tl { width: 11px; height: 11px; border-radius: 50%; }
-.tl-r { background: var(–red); }
-.tl-y { background: var(–yellow); }
-.tl-g { background: var(–green); }
-.tbar-title {
-font-size: 11px;
-color: var(–text-dim);
-letter-spacing: 0.12em;
-}
+/* ── 터미널 공통 ── */
+.terminal{background:var(–card);border-radius:11px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.18);}
+.tbar{display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(–border);gap:8px;}
+.tl-wrap{display:flex;gap:5px;}
+.tl{width:11px;height:11px;border-radius:50%;}
+.tl-r{background:var(–red);}.tl-y{background:var(–yellow);}.tl-g{background:var(–green);}
+.tbar-lbl{font-size:11px;color:var(–dim);letter-spacing:.12em;}
 
 /* ── 진행 리포트 ── */
-.pr-body {
-padding: 14px 16px;
-font-size: 12px;
-color: #ccc;
-line-height: 2;
-}
-.pr-row { display: flex; align-items: center; gap: 6px; }
-.pr-k { color: var(–text-dim); min-width: 110px; }
-.pr-v { color: var(–text); }
-.pr-v.g { color: var(–green); font-weight: 700; }
-.pr-bar-row {
-display: flex;
-align-items: center;
-gap: 8px;
-margin: 4px 0;
-}
-.pr-bar {
-flex: 1;
-height: 13px;
-background: #2a2a2a;
-border-radius: 2px;
-overflow: hidden;
-border: 1px solid #3a3a3a;
-}
-.pr-bar-fill {
-height: 100%;
-background: var(–green);
-transition: width 0.4s ease;
-background-image: repeating-linear-gradient(
-90deg, transparent, transparent 6px,
-rgba(0,0,0,0.15) 6px, rgba(0,0,0,0.15) 7px
-);
-}
-.pr-pct { color: var(–green); font-weight: 700; min-width: 38px; text-align: right; }
-.pr-groups { margin-top: 2px; }
-.pr-g-row {
-display: flex;
-align-items: center;
-gap: 6px;
-padding: 1px 0;
-}
-.pr-g-dot { color: var(–text-dimmer); }
-.pr-g-name { color: #bbb; min-width: 56px; }
-.pr-g-bar {
-flex: 1;
-height: 9px;
-background: #2a2a2a;
-border-radius: 2px;
-overflow: hidden;
-border: 1px solid #333;
-}
-.pr-g-fill {
-height: 100%;
-background: var(–green);
-transition: width 0.4s ease;
-background-image: repeating-linear-gradient(
-90deg, transparent, transparent 4px,
-rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px
-);
-}
-.pr-g-stat { color: var(–text-dim); font-size: 11px; min-width: 72px; text-align: right; }
-.pr-prompt { color: var(–text-muted); margin-top: 4px; }
+.pr-body{padding:13px 16px;font-size:12px;color:#ccc;line-height:2;}
+.pr-row{display:flex;align-items:center;gap:6px;}
+.pr-k{color:var(–dim);min-width:110px;}.pr-v{color:var(–text);}.pr-v.g{color:var(–green);font-weight:700;}
+.pr-bar-row{display:flex;align-items:center;gap:8px;margin:4px 0;}
+.pr-bar{flex:1;height:13px;background:#2a2a2a;border-radius:2px;overflow:hidden;border:1px solid #3a3a3a;}
+.pr-bar-fill{height:100%;background:var(–green);transition:width .4s;background-image:repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(0,0,0,.15) 6px,rgba(0,0,0,.15) 7px);}
+.pr-pct{color:var(–green);font-weight:700;min-width:38px;text-align:right;}
+.pr-g-row{display:flex;align-items:center;gap:6px;padding:1px 0;}
+.pr-g-dot{color:var(–dimmer);}.pr-g-name{color:#bbb;min-width:56px;}
+.pr-g-bar{flex:1;height:9px;background:#2a2a2a;border-radius:2px;overflow:hidden;border:1px solid #333;}
+.pr-g-fill{height:100%;background:var(–green);transition:width .4s;background-image:repeating-linear-gradient(90deg,transparent,transparent 4px,rgba(0,0,0,.15) 4px,rgba(0,0,0,.15) 5px);}
+.pr-g-stat{color:var(–dim);font-size:11px;min-width:72px;text-align:right;}
+.pr-prompt{color:var(–muted);margin-top:4px;}
 
 /* ── CLI 바 ── */
-.cli-bar {
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-size: 12px;
-color: var(–text-dimmer);
-padding: 8px 2px;
-}
-.cli-cmd { color: var(–green); }
-.cli-new-btn {
-background: none;
-border: 1px solid #555;
-color: var(–text-dim);
-font-family: inherit;
-font-size: 11px;
-padding: 5px 10px;
-border-radius: 4px;
-cursor: pointer;
-transition: all 0.15s;
-}
-.cli-new-btn:hover { color: var(–green); border-color: var(–green); }
+.cli-bar{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(–dimmer);padding:8px 2px;}
+.cli-cmd{color:var(–green);}
+.cli-new-btn{background:none;border:1px solid #555;color:var(–dim);font-family:inherit;font-size:11px;padding:5px 10px;border-radius:4px;cursor:pointer;transition:all .15s;}
+.cli-new-btn:hover{color:var(–green);border-color:var(–green);}
+.new-group-form{background:var(–card);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:none;flex-direction:column;gap:8px;}
+.new-group-form.show{display:flex;}
+.ng-input{background:var(–input);border:1px solid var(–border2);color:var(–text);font-family:inherit;font-size:13px;padding:9px 12px;border-radius:5px;outline:none;transition:border-color .15s;}
+.ng-input:focus{border-color:var(–green);}
+.ng-input::placeholder{color:var(–dimmer);}
+.ng-btns{display:flex;gap:8px;}
+.ng-ok{background:var(–green);border:none;color:#000;font-family:inherit;font-size:12px;font-weight:700;padding:8px 16px;border-radius:4px;cursor:pointer;}
+.ng-cancel{background:var(–input);border:1px solid var(–border2);color:var(–dim);font-family:inherit;font-size:12px;padding:8px 16px;border-radius:4px;cursor:pointer;}
 
-/* ── 새 그룹 폼 ── */
-.new-group-form {
-background: var(–card);
-border-radius: 10px;
-padding: 14px 16px;
-margin-bottom: 14px;
-display: none;
-gap: 8px;
-flex-direction: column;
-}
-.new-group-form.show { display: flex; }
-.ng-input {
-background: var(–input-bg);
-border: 1px solid var(–border2);
-color: var(–text);
-font-family: inherit;
-font-size: 13px;
-padding: 9px 12px;
-border-radius: 5px;
-outline: none;
-transition: border-color 0.15s;
-}
-.ng-input:focus { border-color: var(–green); }
-.ng-input::placeholder { color: var(–text-dimmer); }
-.ng-btns { display: flex; gap: 8px; }
-.ng-ok {
-background: var(–green);
-border: none;
-color: #000;
-font-family: inherit;
-font-size: 12px;
-font-weight: 700;
-padding: 8px 16px;
-border-radius: 4px;
-cursor: pointer;
-}
-.ng-cancel {
-background: var(–input-bg);
-border: 1px solid var(–border2);
-color: var(–text-dim);
-font-family: inherit;
-font-size: 12px;
-padding: 8px 16px;
-border-radius: 4px;
-cursor: pointer;
-}
+/* ── 섹션 ── */
+.sec-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px 10px;border-bottom:1px solid var(–border);}
+.sec-path{font-size:13px;color:#aaa;letter-spacing:.04em;}
+.sec-right{display:flex;align-items:center;gap:8px;}
+.sec-count{font-size:12px;color:var(–dim);}
+.sec-add-btn{background:none;border:none;color:var(–dim);font-family:inherit;font-size:17px;cursor:pointer;transition:color .15s;}
+.sec-add-btn:hover{color:var(–green);}
+.sec-del-btn{background:none;border:none;color:#3a3a3a;font-family:inherit;font-size:12px;cursor:pointer;transition:color .15s;}
+.sec-del-btn:hover{color:var(–red);}
+.sec-grass-badge{font-size:10px;color:var(–green);border:1px solid rgba(40,200,64,.4);padding:2px 7px;border-radius:10px;cursor:pointer;transition:background .15s;}
+.sec-grass-badge:hover{background:rgba(40,200,64,.1);}
 
-/* ── 섹션 헤더 ── */
-.sec-header {
-display: flex;
-align-items: center;
-justify-content: space-between;
-padding: 11px 16px 10px;
-border-bottom: 1px solid var(–border);
-}
-.sec-path { font-size: 13px; color: #aaa; letter-spacing: 0.04em; }
-.sec-right { display: flex; align-items: center; gap: 10px; }
-.sec-count { font-size: 12px; color: var(–text-dim); }
-.sec-add-btn {
-background: none;
-border: none;
-color: var(–text-dim);
-font-family: inherit;
-font-size: 17px;
-cursor: pointer;
-padding: 0 2px;
-line-height: 1;
-transition: color 0.15s;
-}
-.sec-add-btn:hover { color: var(–green); }
-.sec-del-btn {
-background: none;
-border: none;
-color: #3a3a3a;
-font-family: inherit;
-font-size: 12px;
-cursor: pointer;
-padding: 0 2px;
-transition: color 0.15s;
-}
-.sec-del-btn:hover { color: var(–red); }
+/* ── 할일 ── */
+.task-item{display:flex;align-items:flex-start;padding:11px 16px;border-bottom:1px solid #222;gap:8px;transition:background .1s;}
+.task-item:last-of-type{border-bottom:none;}
+.task-item:hover{background:#1e1e1e;}
+.task-item:hover .task-actions{opacity:1;}
+.task-cb{font-size:13px;min-width:26px;cursor:pointer;padding-top:1px;flex-shrink:0;user-select:none;transition:color .15s;}
+.task-cb.done{color:var(–green);}.task-cb.todo{color:#555;}
+.task-body{flex:1;min-width:0;cursor:pointer;}
+.task-name{font-size:13px;color:var(–text);line-height:1.4;word-break:break-all;}
+.task-name.done{text-decoration:line-through;color:#4a4a4a;}
+.task-ts{font-size:11px;color:#4a4a4a;margin-top:3px;}
+.task-actions{display:flex;gap:5px;flex-shrink:0;opacity:0;transition:opacity .15s;padding-top:1px;}
+.t-focus-btn{background:none;border:1px solid var(–green);color:var(–green);font-family:inherit;font-size:10px;padding:3px 7px;border-radius:3px;cursor:pointer;opacity:.75;transition:all .15s;}
+.t-focus-btn:hover{opacity:1;background:rgba(40,200,64,.1);}
+.t-del-btn{background:none;border:1px solid #3a3a3a;color:#555;font-family:inherit;font-size:10px;padding:3px 7px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.t-del-btn:hover{color:var(–red);border-color:var(–red);}
+.add-form{padding:10px 16px;border-top:1px solid var(–border);display:none;gap:8px;}
+.add-form.show{display:flex;}
+.add-input{flex:1;background:var(–input);border:1px solid var(–border2);color:var(–text);font-family:inherit;font-size:13px;padding:8px 10px;border-radius:4px;outline:none;transition:border-color .15s;}
+.add-input:focus{border-color:var(–green);}
+.add-input::placeholder{color:var(–dimmer);}
+.add-ok{background:var(–green);border:none;color:#000;font-family:inherit;font-size:13px;font-weight:700;padding:8px 14px;border-radius:4px;cursor:pointer;}
+.empty-state{padding:18px 16px;text-align:center;font-size:12px;color:#3a3a3a;}
 
-/* ── 할일 아이템 ── */
-.task-item {
-display: flex;
-align-items: flex-start;
-padding: 11px 16px;
-border-bottom: 1px solid #222;
-gap: 8px;
-position: relative;
-transition: background 0.1s;
-}
-.task-item:last-of-type { border-bottom: none; }
-.task-item:hover { background: #1e1e1e; }
-.task-item:hover .task-actions { opacity: 1; }
+/* ── 잔디뷰 ── */
+.grass-section-select{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.grass-sec-btn{font-family:inherit;font-size:11px;padding:6px 14px;border-radius:20px;cursor:pointer;background:#1a1a1a;border:1px solid #333;color:var(–dim);transition:all .15s;}
+.grass-sec-btn.on{background:rgba(40,200,64,.15);border-color:var(–green);color:var(–green);}
+.grass-wrap{background:var(–card);border-radius:11px;padding:18px;margin-bottom:14px;overflow:hidden;}
+.grass-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.grass-title{font-size:13px;color:#bbb;letter-spacing:.04em;}
+.grass-year{font-size:11px;color:var(–dimmer);}
+.grass-scroll{overflow-x:auto;padding-bottom:8px;}
+.grass-month-row{display:flex;gap:3px;margin-bottom:4px;padding-left:0;}
+.grass-month-lbl{font-size:10px;color:var(–dimmer);text-align:left;}
+.grass-grid{display:flex;gap:3px;}
+.grass-col{display:flex;flex-direction:column;gap:3px;}
+.grass-cell{width:13px;height:13px;border-radius:2px;background:#222;border:1px solid #2a2a2a;flex-shrink:0;}
+.grass-cell.l1{background:#0a4a14;border-color:#0a4a14;}
+.grass-cell.l2{background:#0e7321;border-color:#0e7321;}
+.grass-cell.l3{background:#18a832;border-color:#18a832;}
+.grass-cell.l4{background:var(–green);border-color:var(–green);}
+.grass-cell.today{outline:2px solid var(–yellow);outline-offset:1px;}
+.grass-legend{display:flex;align-items:center;gap:5px;margin-top:12px;justify-content:flex-end;}
+.grass-legend-lbl{font-size:10px;color:var(–dimmer);}
+.grass-legend-cells{display:flex;gap:2px;}
+.grass-legend-cell{width:11px;height:11px;border-radius:2px;}
+.grass-stats{display:flex;gap:10px;margin-top:14px;}
+.grass-stat{flex:1;background:#111;border-radius:7px;padding:10px 8px;text-align:center;}
+.grass-stat-val{font-size:20px;color:var(–green);font-weight:700;}
+.grass-stat-lbl{font-size:10px;color:var(–dimmer);margin-top:2px;letter-spacing:.05em;}
+.grass-empty{font-size:12px;color:#3a3a3a;padding:24px 16px;text-align:center;}
 
-.task-cb {
-font-size: 13px;
-min-width: 26px;
-cursor: pointer;
-padding-top: 1px;
-flex-shrink: 0;
-user-select: none;
-transition: color 0.15s;
-}
-.task-cb.done { color: var(–green); }
-.task-cb.todo { color: #555; }
+/* ── 히스토리 ── */
+.hist-header-row{margin-bottom:14px;}
+.hist-title{font-size:14px;color:#333;font-weight:700;margin-bottom:3px;}
+.hist-sub{font-size:11px;color:var(–dimmer);}
+.hist-day{background:var(–card);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.hist-day-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;border-bottom:1px solid transparent;transition:border-color .15s;}
+.hist-day-hdr.open{border-bottom-color:var(–border);}
+.hist-day-date{font-size:13px;color:#bbb;letter-spacing:.04em;}
+.hist-day-badge{font-size:11px;color:var(–green);}
+.hist-day-body{padding:10px 16px 14px;display:none;}
+.hist-day-body.open{display:block;}
+.hist-grp-name{font-size:11px;color:var(–dimmer);margin:8px 0 4px;letter-spacing:.08em;}
+.hist-task{font-size:12px;color:#666;padding:2px 0;}
+.hist-task.done{color:#bbb;}
+.hist-task.done::before{content:”[✓] “;color:var(–green);}
+.hist-task:not(.done)::before{content:”[ ] “;color:#444;}
+.hist-empty{font-size:12px;color:#3a3a3a;padding:24px;text-align:center;}
 
-.task-body { flex: 1; min-width: 0; cursor: pointer; }
-.task-name {
-font-size: 13px;
-color: var(–text);
-line-height: 1.4;
-word-break: break-all;
-}
-.task-name.done {
-text-decoration: line-through;
-color: #4a4a4a;
-}
-.task-ts { font-size: 11px; color: #4a4a4a; margin-top: 3px; }
-
-.task-actions {
-display: flex;
-gap: 5px;
-flex-shrink: 0;
-opacity: 0;
-transition: opacity 0.15s;
-padding-top: 1px;
-}
-.t-focus-btn {
-background: none;
-border: 1px solid var(–green);
-color: var(–green);
-font-family: inherit;
-font-size: 10px;
-padding: 3px 7px;
-border-radius: 3px;
-cursor: pointer;
-opacity: 0.75;
-transition: opacity 0.15s, background 0.15s;
-}
-.t-focus-btn:hover { opacity: 1; background: rgba(40,200,64,0.1); }
-.t-del-btn {
-background: none;
-border: 1px solid #3a3a3a;
-color: #555;
-font-family: inherit;
-font-size: 10px;
-padding: 3px 7px;
-border-radius: 3px;
-cursor: pointer;
-transition: color 0.15s, border-color 0.15s;
-}
-.t-del-btn:hover { color: var(–red); border-color: var(–red); }
-
-/* ── 추가 폼 ── */
-.add-form {
-padding: 10px 16px;
-border-top: 1px solid var(–border);
-display: none;
-gap: 8px;
-}
-.add-form.show { display: flex; }
-.add-input {
-flex: 1;
-background: var(–input-bg);
-border: 1px solid var(–border2);
-color: var(–text);
-font-family: inherit;
-font-size: 13px;
-padding: 8px 10px;
-border-radius: 4px;
-outline: none;
-transition: border-color 0.15s;
-}
-.add-input:focus { border-color: var(–green); }
-.add-input::placeholder { color: var(–text-dimmer); }
-.add-ok {
-background: var(–green);
-border: none;
-color: #000;
-font-family: inherit;
-font-size: 13px;
-font-weight: 700;
-padding: 8px 14px;
-border-radius: 4px;
-cursor: pointer;
-}
-
-/* ── 빈 상태 ── */
-.empty-state {
-padding: 18px 16px;
-text-align: center;
-font-size: 12px;
-color: #3a3a3a;
-}
+/* ── 설정 ── */
+.setting-block{background:var(–card);border-radius:11px;padding:16px;margin-bottom:12px;}
+.setting-section-title{font-size:11px;color:var(–dim);letter-spacing:.1em;margin-bottom:12px;}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #222;}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:13px;color:#bbb;}
+.toggle-wrap{position:relative;width:36px;height:20px;}
+.toggle-wrap input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#333;border-radius:10px;cursor:pointer;transition:.2s;}
+.toggle-slider::before{content:’’;position:absolute;width:14px;height:14px;left:3px;top:3px;background:#666;border-radius:50%;transition:.2s;}
+.toggle-wrap input:checked+.toggle-slider{background:rgba(40,200,64,.35);}
+.toggle-wrap input:checked+.toggle-slider::before{transform:translateX(16px);background:var(–green);}
 
 /* ── 하단 버튼 ── */
-.bottom-bar {
-position: fixed;
-bottom: 0; left: 0; right: 0;
-display: flex;
-gap: 12px;
-padding: 14px 16px 30px;
-background: linear-gradient(transparent, var(–bg) 28%);
-}
-.btn-cert {
-flex: 1;
-padding: 14px;
-background: #fff;
-border: none;
-border-radius: 11px;
-font-family: inherit;
-font-size: 13px;
-color: #333;
-cursor: pointer;
-box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-display: flex; align-items: center; justify-content: center; gap: 5px;
-transition: background 0.15s;
-}
-.btn-cert:hover { background: #f5f5f5; }
-.btn-list {
-flex: 1;
-padding: 14px;
-background: var(–card);
-border: none;
-border-radius: 11px;
-font-family: inherit;
-font-size: 13px;
-color: #ccc;
-cursor: pointer;
-box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-display: flex; align-items: center; justify-content: center; gap: 5px;
-transition: background 0.15s;
-}
-.btn-list:hover { background: #222; }
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;display:flex;gap:12px;padding:14px 16px 30px;background:linear-gradient(transparent,var(–bg) 28%);}
+.btn-cert{flex:1;padding:14px;background:#fff;border:none;border-radius:11px;font-family:inherit;font-size:13px;color:#333;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;gap:5px;transition:background .15s;}
+.btn-cert:hover{background:#f5f5f5;}
+.btn-list{flex:1;padding:14px;background:var(–card);border:none;border-radius:11px;font-family:inherit;font-size:13px;color:#ccc;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-list:hover{background:#222;}
 
-/* ── 초집중 오버레이 ── */
-.focus-overlay {
-display: none;
-position: fixed;
-inset: 0;
-background: #0a0a0a;
-z-index: 1000;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-padding: 24px;
-}
-.focus-overlay.show { display: flex; }
+/* ── 초집중 ── */
+.focus-overlay{display:none;position:fixed;inset:0;background:#0a0a0a;z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.focus-overlay.show{display:flex;}
+.focus-card{width:100%;max-width:380px;background:var(–card);border-radius:13px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+.focus-tbar{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(–border);gap:8px;}
+.focus-tbar-title{font-size:11px;color:var(–dim);letter-spacing:.12em;}
+.focus-close-btn{margin-left:auto;background:none;border:none;color:#555;font-family:inherit;font-size:15px;cursor:pointer;transition:color .15s;}
+.focus-close-btn:hover{color:var(–red);}
+.focus-body{padding:28px 22px 24px;text-align:center;}
+.focus-cmd{font-size:11px;color:var(–dimmer);letter-spacing:.12em;margin-bottom:10px;}
+.focus-task{font-size:17px;color:var(–text);line-height:1.4;margin-bottom:28px;font-weight:600;}
+.focus-timer{font-size:54px;color:var(–green);letter-spacing:.04em;margin-bottom:6px;font-weight:300;}
+.focus-state{font-size:11px;color:var(–dimmer);margin-bottom:20px;letter-spacing:.12em;}
+.focus-controls{display:flex;gap:10px;justify-content:center;margin-bottom:18px;}
+.f-btn{font-family:inherit;font-size:13px;padding:10px 22px;border-radius:6px;cursor:pointer;border:none;transition:all .15s;}
+.f-btn-start{background:var(–green);color:#000;font-weight:700;}
+.f-btn-start:hover{background:#22b035;}
+.f-btn-reset{background:#252525;color:var(–dim);border:1px solid var(–border2);}
+.f-btn-reset:hover{color:var(–text);}
+.focus-presets{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;}
+.f-preset{font-family:inherit;font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;background:#222;border:1px solid var(–border2);color:#666;transition:all .15s;}
+.f-preset:hover{color:var(–green);border-color:var(–green);}
+.f-preset.on{background:rgba(40,200,64,.1);color:var(–green);border-color:var(–green);}
+.focus-done{width:100%;padding:13px;background:var(–green);border:none;border-radius:7px;font-family:inherit;font-size:14px;font-weight:700;color:#000;cursor:pointer;transition:background .15s;}
+.focus-done:hover{background:#22b035;}
 
-.focus-card {
-width: 100%;
-max-width: 380px;
-background: var(–card);
-border-radius: 13px;
-overflow: hidden;
-box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-}
-.focus-tbar {
-display: flex;
-align-items: center;
-padding: 10px 14px;
-border-bottom: 1px solid var(–border);
-gap: 8px;
-}
-.focus-tbar-title { font-size: 11px; color: var(–text-dim); letter-spacing: 0.12em; }
-.focus-close-btn {
-margin-left: auto;
-background: none;
-border: none;
-color: #555;
-font-family: inherit;
-font-size: 15px;
-cursor: pointer;
-padding: 0 2px;
-transition: color 0.15s;
-}
-.focus-close-btn:hover { color: var(–red); }
-
-.focus-body {
-padding: 28px 22px 24px;
-text-align: center;
-}
-.focus-cmd { font-size: 11px; color: var(–text-dimmer); letter-spacing: 0.12em; margin-bottom: 10px; }
-.focus-task { font-size: 18px; color: var(–text); line-height: 1.4; margin-bottom: 30px; font-weight: 600; }
-
-.focus-timer {
-font-size: 56px;
-color: var(–green);
-letter-spacing: 0.04em;
-margin-bottom: 6px;
-font-weight: 300;
-}
-.focus-timer-state { font-size: 11px; color: var(–text-dimmer); margin-bottom: 20px; letter-spacing: 0.12em; }
-
-.focus-controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 18px; }
-.f-btn {
-font-family: inherit;
-font-size: 13px;
-padding: 10px 22px;
-border-radius: 6px;
-cursor: pointer;
-border: none;
-transition: all 0.15s;
-}
-.f-btn-start { background: var(–green); color: #000; font-weight: 700; }
-.f-btn-start:hover { background: #22b035; }
-.f-btn-reset { background: #252525; color: var(–text-dim); border: 1px solid var(–border2); }
-.f-btn-reset:hover { color: var(–text); }
-
-.focus-presets { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-.f-preset {
-font-family: inherit;
-font-size: 11px;
-padding: 5px 12px;
-border-radius: 4px;
-cursor: pointer;
-background: #222;
-border: 1px solid var(–border2);
-color: #666;
-transition: all 0.15s;
-}
-.f-preset:hover { color: var(–green); border-color: var(–green); }
-.f-preset.on { background: rgba(40,200,64,0.1); color: var(–green); border-color: var(–green); }
-
-.focus-done {
-width: 100%;
-padding: 13px;
-background: var(–green);
-border: none;
-border-radius: 7px;
-font-family: inherit;
-font-size: 14px;
-font-weight: 700;
-color: #000;
-cursor: pointer;
-transition: background 0.15s;
-}
-.focus-done:hover { background: #22b035; }
-
-/* ── 모달 시트 ── */
-.modal-bg {
-display: none;
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.55);
-z-index: 900;
-align-items: flex-end;
-}
-.modal-bg.show { display: flex; }
-.modal-sheet {
-width: 100%;
-background: var(–card);
-border-radius: 16px 16px 0 0;
-padding: 18px 18px 36px;
-max-height: 80vh;
-overflow-y: auto;
-}
-.modal-handle {
-width: 36px; height: 4px;
-background: #444;
-border-radius: 2px;
-margin: 0 auto 18px;
-}
-.modal-title {
-font-size: 15px;
-color: var(–text);
-margin-bottom: 14px;
-font-weight: 700;
-letter-spacing: 0.02em;
-}
-.modal-code {
-background: #111;
-border-radius: 8px;
-padding: 14px;
-font-family: inherit;
-font-size: 12px;
-color: #bbb;
-line-height: 1.9;
-white-space: pre-wrap;
-word-break: break-all;
-margin-bottom: 14px;
-min-height: 80px;
-border: 1px solid #222;
-}
-.modal-copy {
-width: 100%;
-padding: 13px;
-background: var(–green);
-border: none;
-border-radius: 8px;
-font-family: inherit;
-font-size: 13px;
-font-weight: 700;
-color: #000;
-cursor: pointer;
-margin-bottom: 8px;
-transition: background 0.15s;
-}
-.modal-copy:hover { background: #22b035; }
-.modal-btns { display: flex; gap: 8px; }
-.modal-sec-btn {
-flex: 1;
-padding: 11px;
-background: #222;
-border: 1px solid var(–border2);
-border-radius: 7px;
-font-family: inherit;
-font-size: 12px;
-color: var(–text-dim);
-cursor: pointer;
-transition: color 0.15s;
-}
-.modal-sec-btn:hover { color: var(–text); }
+/* ── 모달 ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;align-items:flex-end;}
+.modal-bg.show{display:flex;}
+.modal-sheet{width:100%;background:var(–card);border-radius:16px 16px 0 0;padding:18px 18px 36px;max-height:80vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:#444;border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-size:15px;color:var(–text);margin-bottom:14px;font-weight:700;}
+.modal-code{background:#111;border-radius:8px;padding:14px;font-family:inherit;font-size:12px;color:#bbb;line-height:1.9;white-space:pre-wrap;word-break:break-all;margin-bottom:14px;min-height:80px;border:1px solid #222;}
+.modal-copy{width:100%;padding:13px;background:var(–green);border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;color:#000;cursor:pointer;margin-bottom:8px;transition:background .15s;}
+.modal-copy:hover{background:#22b035;}
+.modal-btns{display:flex;gap:8px;}
+.modal-sec-btn{flex:1;padding:11px;background:#222;border:1px solid var(–border2);border-radius:7px;font-family:inherit;font-size:12px;color:var(–dim);cursor:pointer;transition:color .15s;}
+.modal-sec-btn:hover{color:var(–text);}
 
 /* ── 토스트 ── */
-.toast {
-position: fixed;
-bottom: 96px;
-left: 50%;
-transform: translateX(-50%) translateY(14px);
-background: var(–green);
-color: #000;
-font-family: inherit;
-font-size: 12px;
-font-weight: 700;
-padding: 9px 18px;
-border-radius: 20px;
-opacity: 0;
-pointer-events: none;
-transition: opacity 0.25s, transform 0.25s;
-white-space: nowrap;
-z-index: 2000;
-letter-spacing: 0.05em;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(14px);background:var(–green);color:#000;font-family:inherit;font-size:12px;font-weight:700;padding:9px 18px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;z-index:2000;letter-spacing:.05em;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 
 </head>
 <body>
 
-<div class="page-header">
-  <div class="page-title">체크리스트</div>
-  <div class="page-sub">Focus on what matters. One task at a time.</div>
+<!-- 유저바 -->
+
+<div class="user-bar">
+  <span class="user-name">☰ 체크리스트</span>
+  <span class="user-date" id="userDateBar"></span>
 </div>
-<div class="date-tag" id="dateTag"></div>
 
-<!-- 진행 리포트 -->
+<!-- 탭 -->
 
-<div class="terminal">
-  <div class="tbar">
-    <div class="tl-wrap"><div class="tl tl-r"></div><div class="tl tl-y"></div><div class="tl tl-g"></div></div>
-    <span class="tbar-title">PROGRESS_REPORT.EXE</span>
+<div class="tab-bar">
+  <button class="tab-btn on"  onclick="showTab('main',this)">할일</button>
+  <button class="tab-btn"     onclick="showTab('grass',this)">🌿 잔디</button>
+  <button class="tab-btn"     onclick="showTab('history',this)">📅 히스토리</button>
+  <button class="tab-btn"     onclick="showTab('settings',this)">⚙ 설정</button>
+</div>
+
+<!-- ① 할일 탭 -->
+
+<div class="tab-content on" id="tab-main">
+  <div class="terminal">
+    <div class="tbar">
+      <div class="tl-wrap"><div class="tl tl-r"></div><div class="tl tl-y"></div><div class="tl tl-g"></div></div>
+      <span class="tbar-lbl">PROGRESS_REPORT.EXE</span>
+    </div>
+    <div class="pr-body" id="prBody"></div>
   </div>
-  <div class="pr-body" id="prBody"></div>
+  <div class="cli-bar">
+    <span><span class="cli-cmd">$</span> ls -la ~/groups/</span>
+    <button class="cli-new-btn" onclick="toggleNewGroupForm()">+ mkdir new-group</button>
+  </div>
+  <div class="new-group-form" id="newGroupForm">
+    <input class="ng-input" id="ngInput" placeholder="~/그룹명/ (예: 업무, 1%, 루틴)"
+           onkeydown="if(event.key==='Enter')addGroup()">
+    <div class="ng-btns">
+      <button class="ng-ok" onclick="addGroup()">만들기</button>
+      <button class="ng-cancel" onclick="toggleNewGroupForm()">취소</button>
+    </div>
+  </div>
+  <div id="sections"></div>
 </div>
 
-<!-- CLI 바 -->
+<!-- ② 잔디 탭 -->
 
-<div class="cli-bar">
-  <span><span class="cli-cmd">$</span> ls -la ~/groups/</span>
-  <button class="cli-new-btn" onclick="toggleNewGroupForm()">+ mkdir new-group</button>
+<div class="tab-content" id="tab-grass">
+  <div style="margin-bottom:12px;font-size:12px;color:var(--dimmer);">$ view --mode=grass-chart</div>
+  <div class="grass-section-select" id="grassSectionSelect"></div>
+  <div id="grassChartWrap"></div>
 </div>
 
-<!-- 새 그룹 폼 -->
+<!-- ③ 히스토리 탭 -->
 
-<div class="new-group-form" id="newGroupForm">
-  <input class="ng-input" id="ngInput" placeholder="~/그룹명/ (예: 업무, 1%, 루틴)"
-         onkeydown="if(event.key==='Enter')addGroup()">
-  <div class="ng-btns">
-    <button class="ng-ok" onclick="addGroup()">만들기</button>
-    <button class="ng-cancel" onclick="toggleNewGroupForm()">취소</button>
+<div class="tab-content" id="tab-history">
+  <div class="hist-header-row">
+    <div class="hist-title">📅 히스토리</div>
+    <div class="hist-sub">날짜별 완료 기록 (로컬 저장)</div>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- ④ 설정 탭 -->
+
+<div class="tab-content" id="tab-settings">
+  <div class="setting-block">
+    <div class="setting-section-title">// GRASS_SETTINGS — 잔디 추적할 섹션</div>
+    <div id="grassSettingRows"></div>
+  </div>
+  <div class="setting-block">
+    <div class="setting-section-title">// DATA</div>
+    <div class="setting-row">
+      <span class="setting-label">오늘 히스토리 저장</span>
+      <button onclick="snapshotToday(true)"
+        style="background:none;border:1px solid #444;color:var(--dim);font-family:inherit;font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;">
+        수동 저장
+      </button>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">히스토리 전체 삭제</span>
+      <button onclick="clearHistory()"
+        style="background:none;border:1px solid #3a3a3a;color:#555;font-family:inherit;font-size:11px;padding:5px 12px;border-radius:4px;cursor:pointer;">
+        삭제
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- 섹션들 -->
+<!-- 하단 버튼 (할일 탭) -->
 
-<div id="sections"></div>
-
-<!-- 하단 버튼 -->
-
-<div class="bottom-bar">
+<div class="bottom-bar" id="bottomBar">
   <button class="btn-cert" onclick="openCert()">📋 오늘 할일 인증하기</button>
   <button class="btn-list" onclick="openList()">☰ 리스트업</button>
 </div>
@@ -669,39 +320,37 @@ letter-spacing: 0.05em;
       <div class="focus-cmd">$ sudo focus --task</div>
       <div class="focus-task" id="focusTask"></div>
       <div class="focus-timer" id="focusTimer">25:00</div>
-      <div class="focus-timer-state" id="focusState">READY</div>
+      <div class="focus-state" id="focusState">READY</div>
       <div class="focus-controls">
         <button class="f-btn f-btn-start" id="focusStartBtn" onclick="toggleTimer()">▶ START</button>
         <button class="f-btn f-btn-reset" onclick="resetTimer()">↺ RESET</button>
       </div>
       <div class="focus-presets">
         <button class="f-preset on" onclick="setTime(25)" data-m="25">25분</button>
-        <button class="f-preset" onclick="setTime(15)" data-m="15">15분</button>
-        <button class="f-preset" onclick="setTime(10)" data-m="10">10분</button>
-        <button class="f-preset" onclick="setTime(5)" data-m="5">5분</button>
+        <button class="f-preset"    onclick="setTime(15)" data-m="15">15분</button>
+        <button class="f-preset"    onclick="setTime(10)" data-m="10">10분</button>
+        <button class="f-preset"    onclick="setTime(5)"  data-m="5">5분</button>
       </div>
-      <button class="focus-done" onclick="doneTask()">✓ 완료로 체크하기</button>
+      <button class="focus-done" onclick="focusDone()">✓ 완료로 체크하기</button>
     </div>
   </div>
 </div>
 
 <!-- 인증 모달 -->
 
-<div class="modal-bg" id="certModal" onclick="closeCert(event)">
+<div class="modal-bg" id="certModal" onclick="modalClose('certModal',event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">📋 오늘 할일 인증하기</div>
     <div class="modal-code" id="certCode"></div>
     <button class="modal-copy" onclick="copyCert()">복사하기</button>
-    <div class="modal-btns">
-      <button class="modal-sec-btn" onclick="closeCert()">닫기</button>
-    </div>
+    <div class="modal-btns"><button class="modal-sec-btn" onclick="modalClose('certModal')">닫기</button></div>
   </div>
 </div>
 
 <!-- 리스트업 모달 -->
 
-<div class="modal-bg" id="listModal" onclick="closeList(event)">
+<div class="modal-bg" id="listModal" onclick="modalClose('listModal',event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">☰ 리스트업</div>
@@ -709,7 +358,7 @@ letter-spacing: 0.05em;
     <button class="modal-copy" onclick="copyList()">복사하기</button>
     <div class="modal-btns">
       <button class="modal-sec-btn" onclick="carryover()">⏩ 미완료 이월</button>
-      <button class="modal-sec-btn" onclick="closeList()">닫기</button>
+      <button class="modal-sec-btn" onclick="modalClose('listModal')">닫기</button>
     </div>
   </div>
 </div>
@@ -717,232 +366,459 @@ letter-spacing: 0.05em;
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── 날짜 유틸 ───
+// ══════════════════════════════════════════
+// 유틸
+// ══════════════════════════════════════════
 const pad = n => String(n).padStart(2,'0');
-function getMMDD() {
-  const d = new Date();
-  return pad(d.getMonth()+1) + pad(d.getDate());
-}
-function getDateFull() {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
-function getTS() {
-  const d = new Date();
-  return `${getDateFull()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+function getMMDD(d){ d=d||new Date(); return pad(d.getMonth()+1)+pad(d.getDate()); }
+function getYYYYMMDD(d){ d=d||new Date(); return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`; }
+function getDateFull(d){ d=d||new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function getTS(){ const d=new Date(); return `${getDateFull(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtKey(k){ return `${k.slice(0,4)}-${k.slice(4,6)}-${k.slice(6,8)}`; }
 
-// ─── 스토리지 ───
-const KEY = 'hazel_cl_v3';
-function load() {
-  try { const r = localStorage.getItem(KEY); if(r) return JSON.parse(r); } catch(e) {}
+// ══════════════════════════════════════════
+// 스토리지 키
+// ══════════════════════════════════════════
+const TODAY_KEY   = 'hazel_today_v3';
+const HISTORY_KEY = 'hazel_history_v3';
+const GRASS_KEY   = 'hazel_grass_v3';
+
+// ══════════════════════════════════════════
+// 오늘 데이터
+// ══════════════════════════════════════════
+function defaultData(){
   return {
     date: getMMDD(),
-    groups: [
-      { id:'g1', name:'1%', tasks:[] },
-      { id:'g2', name:'루틴', tasks:[] },
-      { id:'g3', name:'자기전', tasks:[] }
+    groups:[
+      {id:'g1', name:'1%',    tasks:[], grassEnabled:true},
+      {id:'g2', name:'루틴',  tasks:[], grassEnabled:true},
+      {id:'g3', name:'자기전',tasks:[], grassEnabled:false}
     ]
   };
 }
-function save() { localStorage.setItem(KEY, JSON.stringify(D)); }
+function loadData(){
+  try{ const r=localStorage.getItem(TODAY_KEY); if(r) return JSON.parse(r); }catch(e){}
+  return defaultData();
+}
+function saveData(){ localStorage.setItem(TODAY_KEY, JSON.stringify(D)); }
 
-let D = load();
+let D = loadData();
 
-// 날짜 바뀌면 완료항목 제거 + 날짜 업데이트
-if (D.date !== getMMDD()) {
-  D.groups.forEach(g => { g.tasks = g.tasks.filter(t => !t.done); });
+// 날짜가 바뀌었으면 → 어제 스냅샷 저장 후 미완료만 이월
+if(D.date !== getMMDD()){
+  snapshotToday(false, D); // 어제 데이터 저장
+  D.groups.forEach(g=>{ g.tasks=g.tasks.filter(t=>!t.done); });
   D.date = getMMDD();
-  save();
+  saveData();
 }
 
-// ─── 렌더 ───
-function render() {
-  renderDate();
+// ══════════════════════════════════════════
+// 히스토리 (날짜별 스냅샷)
+// ══════════════════════════════════════════
+function loadHistory(){ try{ const r=localStorage.getItem(HISTORY_KEY); if(r) return JSON.parse(r); }catch(e){} return {}; }
+function saveHistory(h){ localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+
+function snapshotToday(manual=false, data){
+  const src = data || D;
+  const key = data ? (() => {
+    // 날짜가 바뀔 때 어제 날짜 키 계산
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+    return getYYYYMMDD(yesterday);
+  })() : getYYYYMMDD();
+
+  const h = loadHistory();
+  h[key] = {
+    groups: JSON.parse(JSON.stringify(src.groups)),
+    savedAt: getTS()
+  };
+  // 히스토리 최대 365일 유지
+  const keys = Object.keys(h).sort();
+  while(keys.length > 365){ delete h[keys.shift()]; }
+  saveHistory(h);
+  // 잔디 데이터도 갱신
+  saveGrass(src, key);
+  if(manual) toast('✓ 오늘 히스토리 저장!');
+}
+
+function clearHistory(){
+  if(!confirm('히스토리를 전부 삭제할까요?')) return;
+  localStorage.removeItem(HISTORY_KEY);
+  localStorage.removeItem(GRASS_KEY);
+  toast('삭제 완료');
+}
+
+// ══════════════════════════════════════════
+// 잔디 데이터
+// ══════════════════════════════════════════
+function loadGrassStore(){ try{ const r=localStorage.getItem(GRASS_KEY); if(r) return JSON.parse(r); }catch(e){} return {}; }
+function saveGrassStore(g){ localStorage.setItem(GRASS_KEY, JSON.stringify(g)); }
+
+// grassStore 구조: { YYYYMMDD: { gid: {name,total,done,pct}, ... }, ... }
+function saveGrass(src, dateKey){
+  const store = loadGrassStore();
+  const map = {};
+  src.groups.forEach(g=>{
+    if(!g.grassEnabled) return;
+    const total=g.tasks.length, done=g.tasks.filter(t=>t.done).length;
+    map[g.id] = { name:g.name, total, done, pct: total>0?Math.round(done/total*100):0 };
+  });
+  store[dateKey] = map;
+  saveGrassStore(store);
+}
+
+// 체크할 때마다 오늘 잔디도 실시간 반영
+function updateTodayGrass(){
+  saveGrass(D, getYYYYMMDD());
+}
+
+// ══════════════════════════════════════════
+// 렌더
+// ══════════════════════════════════════════
+function render(){
+  saveData();
+  updateTodayGrass();
   renderProgress();
   renderSections();
-  save();
+  renderGrassSettings();
 }
 
-function renderDate() {
-  document.getElementById('dateTag').textContent = `# ${getMMDD()} — ${getDateFull()}`;
-}
-
-function renderProgress() {
-  const all = D.groups.flatMap(g => g.tasks);
-  const total = all.length;
-  const done = all.filter(t => t.done).length;
-  const rem = total - done;
-  const pct = total > 0 ? Math.round(done/total*100) : 0;
-  const ts = getTS();
-
-  const gRows = D.groups.map(g => {
-    const gt = g.tasks.length, gd = g.tasks.filter(t=>t.done).length;
-    const gp = gt > 0 ? Math.round(gd/gt*100) : 0;
+function renderProgress(){
+  const all=D.groups.flatMap(g=>g.tasks);
+  const total=all.length, done=all.filter(t=>t.done).length, rem=total-done;
+  const pct=total>0?Math.round(done/total*100):0;
+  const gRows=D.groups.map(g=>{
+    const gt=g.tasks.length, gd=g.tasks.filter(t=>t.done).length;
+    const gp=gt>0?Math.round(gd/gt*100):0;
     return `<div class="pr-g-row">
-      <span class="pr-g-dot">·</span>
-      <span class="pr-g-name">${g.name}</span>
+      <span class="pr-g-dot">·</span><span class="pr-g-name">${g.name}</span>
       <div class="pr-g-bar"><div class="pr-g-fill" style="width:${gp}%"></div></div>
-      <span class="pr-g-stat">${gp}% (${gd}/${gt})</span>
-    </div>`;
+      <span class="pr-g-stat">${gp}% (${gd}/${gt})</span></div>`;
   }).join('');
-
-  document.getElementById('prBody').innerHTML = `
-    <div class="pr-row"><span class="pr-k">$ run</span><span class="pr-v">--mode=summary --timestamp=${ts}</span></div>
-    <br>
-    <div class="pr-row"><span class="pr-k">STATUS</span><span class="pr-v">: RUNNING</span></div>
+  document.getElementById('prBody').innerHTML=`
+    <div class="pr-row"><span class="pr-k">$ run</span><span class="pr-v">--timestamp=${getTS()}</span></div><br>
     <div class="pr-row"><span class="pr-k">TOTAL_TASKS</span><span class="pr-v">: ${total}</span></div>
     <div class="pr-row"><span class="pr-k">COMPLETED</span><span class="pr-v g">: ${done}</span></div>
-    <div class="pr-row"><span class="pr-k">REMAINING</span><span class="pr-v">: ${rem}</span></div>
-    <br>
-    <div class="pr-bar-row"><span class="pr-k">PROGRESS</span><div class="pr-bar"><div class="pr-bar-fill" style="width:${pct}%"></div></div><span class="pr-pct">${pct}%</span></div>
-    <br>
-    <div class="pr-groups"><div class="pr-row"><span style="color:var(--text-dimmer)">> group_breakdown:</span></div>${gRows}</div>
-    <div class="pr-prompt">> </div>
-  `;
+    <div class="pr-row"><span class="pr-k">REMAINING</span><span class="pr-v">: ${rem}</span></div><br>
+    <div class="pr-bar-row"><span class="pr-k">PROGRESS</span>
+      <div class="pr-bar"><div class="pr-bar-fill" style="width:${pct}%"></div></div>
+      <span class="pr-pct">${pct}%</span></div><br>
+    <div><div class="pr-row"><span style="color:var(--dimmer)">> group_breakdown:</span></div>${gRows}</div>
+    <div class="pr-prompt">> </div>`;
 }
 
-function renderSections() {
-  const cont = document.getElementById('sections');
-  cont.innerHTML = '';
-  D.groups.forEach(g => {
-    const done = g.tasks.filter(t=>t.done).length;
-    const total = g.tasks.length;
-    const el = document.createElement('div');
-    el.className = 'terminal';
-
-    // 헤더
-    const hdr = document.createElement('div');
-    hdr.className = 'sec-header';
-    hdr.innerHTML = `
-      <span class="sec-path">~/${g.name}/</span>
+function renderSections(){
+  const cont=document.getElementById('sections');
+  cont.innerHTML='';
+  D.groups.forEach(g=>{
+    const done=g.tasks.filter(t=>t.done).length, total=g.tasks.length;
+    const el=document.createElement('div'); el.className='terminal';
+    const grassBadge=g.grassEnabled
+      ? `<span class="sec-grass-badge" onclick="goGrass('${g.id}')">🌿잔디</span>` : '';
+    const hdr=document.createElement('div'); hdr.className='sec-header';
+    hdr.innerHTML=`<span class="sec-path">~/${g.name}/</span>
       <div class="sec-right">
+        ${grassBadge}
         <span class="sec-count">${done}/${total}</span>
         <button class="sec-add-btn" onclick="toggleAdd('${g.id}')">+</button>
         <button class="sec-del-btn" onclick="deleteGroup('${g.id}')">×</button>
       </div>`;
     el.appendChild(hdr);
-
-    // 빈 상태
-    if (total === 0) {
-      const emp = document.createElement('div');
-      emp.className = 'empty-state';
-      emp.textContent = '> 할일을 추가하세요 (+)';
-      el.appendChild(emp);
+    if(total===0){
+      const emp=document.createElement('div'); emp.className='empty-state';
+      emp.textContent='> 할일을 추가하세요 (+)'; el.appendChild(emp);
     }
-
-    // 할일들 — 미완료 먼저, 완료 나중
-    const sorted = [...g.tasks.filter(t=>!t.done), ...g.tasks.filter(t=>t.done)];
-    sorted.forEach(task => {
-      const row = document.createElement('div');
-      row.className = 'task-item';
-      row.innerHTML = `
-        <span class="task-cb ${task.done?'done':'todo'}" onclick="toggleTask('${g.id}','${task.id}')">${task.done?'[✓]':'[ ]'}</span>
+    [...g.tasks.filter(t=>!t.done), ...g.tasks.filter(t=>t.done)].forEach(task=>{
+      const row=document.createElement('div'); row.className='task-item';
+      row.innerHTML=`
+        <span class="task-cb ${task.done?'done':'todo'}" onclick="toggleTask('${g.id}','${task.id}')">
+          ${task.done?'[✓]':'[ ]'}</span>
         <div class="task-body" onclick="toggleTask('${g.id}','${task.id}')">
           <div class="task-name ${task.done?'done':''}">${task.name}</div>
-          ${task.done ? `<div class="task-ts"># done · ${task.doneAt}</div>` : ''}
+          ${task.done?`<div class="task-ts"># done · ${task.doneAt}</div>`:''}
         </div>
         <div class="task-actions">
-          ${!task.done ? `<button class="t-focus-btn" onclick="openFocus('${g.id}','${task.id}');event.stopPropagation()">▶ 집중</button>` : ''}
-          <button class="t-del-btn" onclick="deleteTask('${g.id}','${task.id}');event.stopPropagation()">✕</button>
+          ${!task.done?`<button class="t-focus-btn"
+            onclick="openFocus('${g.id}','${task.id}');event.stopPropagation()">▶ 집중</button>`:''}
+          <button class="t-del-btn"
+            onclick="deleteTask('${g.id}','${task.id}');event.stopPropagation()">✕</button>
         </div>`;
       el.appendChild(row);
     });
-
-    // 추가 폼
-    const form = document.createElement('div');
-    form.className = 'add-form';
-    form.id = `af_${g.id}`;
-    form.innerHTML = `
-      <input class="add-input" id="ai_${g.id}" placeholder="$ echo 'new task'"
-             onkeydown="if(event.key==='Enter')addTask('${g.id}')">
+    const form=document.createElement('div'); form.className='add-form'; form.id=`af_${g.id}`;
+    form.innerHTML=`<input class="add-input" id="ai_${g.id}" placeholder="$ echo 'new task'"
+      onkeydown="if(event.key==='Enter')addTask('${g.id}')">
       <button class="add-ok" onclick="addTask('${g.id}')">+</button>`;
     el.appendChild(form);
-
     cont.appendChild(el);
   });
 }
 
-// ─── 할일 CRUD ───
-function toggleTask(gid, tid) {
-  const g = D.groups.find(g=>g.id===gid);
-  const t = g.tasks.find(t=>t.id===tid);
-  t.done = !t.done;
-  t.doneAt = t.done ? getTS() : null;
+function renderGrassSettings(){
+  document.getElementById('grassSettingRows').innerHTML =
+    D.groups.map(g=>`
+      <div class="setting-row">
+        <span class="setting-label">~/${g.name}/</span>
+        <label class="toggle-wrap">
+          <input type="checkbox" ${g.grassEnabled?'checked':''} onchange="toggleGrassEnabled('${g.id}',this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// 할일 CRUD
+// ══════════════════════════════════════════
+function toggleTask(gid,tid){
+  const t=D.groups.find(g=>g.id===gid).tasks.find(t=>t.id===tid);
+  t.done=!t.done; t.doneAt=t.done?getTS():null;
   render();
 }
-function deleteTask(gid, tid) {
-  const g = D.groups.find(g=>g.id===gid);
-  g.tasks = g.tasks.filter(t=>t.id!==tid);
-  render();
+function deleteTask(gid,tid){
+  const g=D.groups.find(g=>g.id===gid);
+  g.tasks=g.tasks.filter(t=>t.id!==tid); render();
 }
-function addTask(gid) {
-  const inp = document.getElementById(`ai_${gid}`);
-  const name = inp.value.trim();
-  if (!name) return;
-  D.groups.find(g=>g.id===gid).tasks.push({ id:'t'+Date.now(), name, done:false, doneAt:null });
-  inp.value = '';
-  render();
+function addTask(gid){
+  const inp=document.getElementById(`ai_${gid}`);
+  const name=inp.value.trim(); if(!name) return;
+  D.groups.find(g=>g.id===gid).tasks.push({id:'t'+Date.now(),name,done:false,doneAt:null});
+  inp.value=''; render();
   document.getElementById(`af_${gid}`).classList.add('show');
   setTimeout(()=>document.getElementById(`ai_${gid}`)?.focus(),0);
 }
-function toggleAdd(gid) {
-  const f = document.getElementById(`af_${gid}`);
+function toggleAdd(gid){
+  const f=document.getElementById(`af_${gid}`);
   f.classList.toggle('show');
-  if (f.classList.contains('show')) setTimeout(()=>document.getElementById(`ai_${gid}`)?.focus(),0);
+  if(f.classList.contains('show')) setTimeout(()=>document.getElementById(`ai_${gid}`)?.focus(),0);
 }
 
-// ─── 그룹 ───
-function toggleNewGroupForm() {
-  const f = document.getElementById('newGroupForm');
-  f.classList.toggle('show');
-  if (f.classList.contains('show')) setTimeout(()=>document.getElementById('ngInput').focus(),0);
+// ══════════════════════════════════════════
+// 그룹
+// ══════════════════════════════════════════
+function toggleNewGroupForm(){
+  const f=document.getElementById('newGroupForm'); f.classList.toggle('show');
+  if(f.classList.contains('show')) setTimeout(()=>document.getElementById('ngInput').focus(),0);
 }
-function addGroup() {
-  const inp = document.getElementById('ngInput');
-  const name = inp.value.trim().replace(/^~\/|\/$/g,'');
-  if (!name) return;
-  D.groups.push({ id:'g'+Date.now(), name, tasks:[] });
-  inp.value = '';
-  document.getElementById('newGroupForm').classList.remove('show');
+function addGroup(){
+  const inp=document.getElementById('ngInput');
+  const name=inp.value.trim().replace(/^~\/|\/$/g,''); if(!name) return;
+  D.groups.push({id:'g'+Date.now(),name,tasks:[],grassEnabled:false});
+  inp.value=''; document.getElementById('newGroupForm').classList.remove('show');
   render();
 }
-function deleteGroup(gid) {
-  if (D.groups.length <= 1) { toast('그룹은 최소 1개 필요해요'); return; }
-  D.groups = D.groups.filter(g=>g.id!==gid);
-  render();
+function deleteGroup(gid){
+  if(D.groups.length<=1){toast('그룹은 최소 1개 필요해요');return;}
+  D.groups=D.groups.filter(g=>g.id!==gid); render();
+}
+function toggleGrassEnabled(gid,val){
+  const g=D.groups.find(g=>g.id===gid); if(g) g.grassEnabled=val;
+  render(); renderSections();
 }
 
-// ─── 초집중 ───
-let fGid=null, fTid=null, fSec=25*60, fRunning=false, fInterval=null, fSelMin=25;
+// ══════════════════════════════════════════
+// 잔디 탭
+// ══════════════════════════════════════════
+let currentGrassGid=null;
 
-function openFocus(gid, tid) {
-  fGid=gid; fTid=tid;
-  const t = D.groups.find(g=>g.id===gid).tasks.find(t=>t.id===tid);
-  document.getElementById('focusTask').textContent = t.name;
+function goGrass(gid){
+  currentGrassGid=gid;
+  showTab('grass', document.querySelectorAll('.tab-btn')[1]);
+}
+
+function renderGrassTab(){
+  const grassGroups=D.groups.filter(g=>g.grassEnabled);
+  const sel=document.getElementById('grassSectionSelect');
+  sel.innerHTML=grassGroups.map(g=>`
+    <button class="grass-sec-btn ${currentGrassGid===g.id?'on':''}"
+      onclick="selectGrassGroup('${g.id}')">${g.name}</button>`).join('');
+  if(grassGroups.length>0 && !grassGroups.find(g=>g.id===currentGrassGid))
+    currentGrassGid=grassGroups[0].id;
+  if(currentGrassGid) drawGrass(currentGrassGid);
+  else document.getElementById('grassChartWrap').innerHTML=
+    '<div class="grass-empty">설정 탭에서 잔디 추적할 섹션을 ON 해주세요</div>';
+}
+
+function selectGrassGroup(gid){
+  currentGrassGid=gid;
+  document.querySelectorAll('.grass-sec-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  drawGrass(gid);
+}
+
+function drawGrass(gid){
+  const store=loadGrassStore();
+  const today=new Date(); const todayKey=getYYYYMMDD(today);
+  const weeks=18; const totalDays=weeks*7;
+
+  // 오늘 실시간 데이터 주입
+  if(!store[todayKey]) store[todayKey]={};
+  const grp=D.groups.find(g=>g.id===gid);
+  if(grp){
+    const tot=grp.tasks.length, dn=grp.tasks.filter(t=>t.done).length;
+    store[todayKey][gid]={name:grp.name,total:tot,done:dn,pct:tot>0?Math.round(dn/tot*100):0};
+  }
+
+  // 셀 배열 생성
+  const cells=[];
+  for(let i=totalDays-1;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const key=getYYYYMMDD(d);
+    const gd=store[key]?store[key][gid]:null;
+    const pct=gd?gd.pct:null;
+    let level=0;
+    if(pct!==null){ if(pct>0&&pct<=25)level=1; else if(pct<=50)level=2; else if(pct<=75)level=3; else level=4; }
+    cells.push({key,d,level,pct,isToday:key===todayKey});
+  }
+
+  // 스트릭
+  let streak=0, maxStreak=0, tmp=0;
+  for(let i=0;i<totalDays;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const key=getYYYYMMDD(d);
+    if(store[key]&&store[key][gid]&&store[key][gid].pct>0) streak++;
+    else break;
+  }
+  cells.forEach(c=>{ if(c.level>0){tmp++;maxStreak=Math.max(maxStreak,tmp);}else tmp=0; });
+  const totalDone=cells.filter(c=>c.level>0).length;
+
+  // 월 라벨 (주 단위)
+  const monthLabels=[];
+  for(let w=0;w<weeks;w++){
+    const d=new Date(today); d.setDate(d.getDate()-(weeks-1-w)*7);
+    const prev=w>0?(() => {const p=new Date(today);p.setDate(p.getDate()-(weeks-w)*7);return p.getMonth();})():-1;
+    monthLabels.push(d.getMonth()!==prev?`${d.getMonth()+1}월`:'');
+  }
+
+  const wrap=document.getElementById('grassChartWrap');
+  wrap.innerHTML=`
+    <div class="grass-wrap">
+      <div class="grass-header">
+        <span class="grass-title">~/${grp?grp.name:'?'}/ 잔디</span>
+        <span class="grass-year">${today.getFullYear()}</span>
+      </div>
+      <div class="grass-scroll">
+        <div class="grass-month-row" id="grassMonthRow"></div>
+        <div class="grass-grid" id="grassGrid"></div>
+      </div>
+      <div class="grass-legend">
+        <span class="grass-legend-lbl">Less</span>
+        <div class="grass-legend-cells">
+          ${['#222','#0a4a14','#0e7321','#18a832','var(--green)'].map(c=>
+            `<div class="grass-legend-cell" style="background:${c};border:1px solid #2a2a2a;"></div>`).join('')}
+        </div>
+        <span class="grass-legend-lbl">More</span>
+      </div>
+      <div class="grass-stats">
+        <div class="grass-stat"><div class="grass-stat-val">${streak}</div><div class="grass-stat-lbl">현재 스트릭</div></div>
+        <div class="grass-stat"><div class="grass-stat-val">${maxStreak}</div><div class="grass-stat-lbl">최장 스트릭</div></div>
+        <div class="grass-stat"><div class="grass-stat-val">${totalDone}</div><div class="grass-stat-lbl">완료한 날</div></div>
+      </div>
+    </div>`;
+
+  // 월 라벨 행
+  const mRow=document.getElementById('grassMonthRow');
+  monthLabels.forEach(lbl=>{
+    const d=document.createElement('div');
+    d.className='grass-month-lbl';
+    d.style.cssText='min-width:99px;';  // 13px*7 + 3px*6 gap ≈ 109px, 조정
+    d.style.minWidth=`${13*7+3*6}px`;
+    d.textContent=lbl;
+    mRow.appendChild(d);
+  });
+
+  // 그리드
+  const grid=document.getElementById('grassGrid');
+  for(let w=0;w<weeks;w++){
+    const col=document.createElement('div'); col.className='grass-col';
+    for(let dw=0;dw<7;dw++){
+      const idx=w*7+dw; if(idx>=cells.length){col.appendChild(document.createElement('div'));continue;}
+      const cell=cells[idx];
+      const div=document.createElement('div');
+      div.className=`grass-cell${cell.level>0?' l'+cell.level:''}${cell.isToday?' today':''}`;
+      div.title=`${fmtKey(cell.key)} ${cell.pct!==null?cell.pct+'%':'기록없음'}`;
+      col.appendChild(div);
+    }
+    grid.appendChild(col);
+  }
+}
+
+// ══════════════════════════════════════════
+// 히스토리 탭
+// ══════════════════════════════════════════
+function renderHistoryTab(){
+  const h=loadHistory();
+  const keys=Object.keys(h).sort().reverse();
+  const cont=document.getElementById('historyList');
+  if(keys.length===0){
+    cont.innerHTML='<div class="hist-empty">아직 저장된 히스토리가 없어요<br><span style="font-size:10px;color:#444;margin-top:6px;display:block;">설정 탭에서 수동 저장하거나<br>날짜가 바뀌면 자동 저장돼요</span></div>';
+    return;
+  }
+  cont.innerHTML=keys.map(key=>{
+    const data=h[key]; const groups=data.groups||[];
+    const allTasks=groups.flatMap(g=>g.tasks||[]);
+    const doneCount=allTasks.filter(t=>t.done).length, totalCount=allTasks.length;
+    let bodyHtml='';
+    groups.forEach(g=>{
+      const tasks=g.tasks||[]; if(!tasks.length) return;
+      bodyHtml+=`<div class="hist-grp-name">~/${g.name}/</div>`;
+      [...tasks.filter(t=>t.done),...tasks.filter(t=>!t.done)].forEach(t=>{
+        bodyHtml+=`<div class="hist-task ${t.done?'done':''}">${t.name}</div>`;
+      });
+    });
+    return `<div class="hist-day">
+      <div class="hist-day-hdr" onclick="toggleHist(this)">
+        <span class="hist-day-date"># ${fmtKey(key)}</span>
+        <span class="hist-day-badge">✓ ${doneCount}/${totalCount}</span>
+      </div>
+      <div class="hist-day-body">${bodyHtml||'<span style="color:#3a3a3a;font-size:12px">기록 없음</span>'}</div>
+    </div>`;
+  }).join('');
+}
+function toggleHist(hdr){
+  hdr.classList.toggle('open');
+  hdr.nextElementSibling.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════
+// 탭 전환
+// ══════════════════════════════════════════
+function showTab(name, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById(`tab-${name}`).classList.add('on');
+  if(btn) btn.classList.add('on');
+  document.getElementById('bottomBar').style.display = name==='main'?'flex':'none';
+  if(name==='grass') renderGrassTab();
+  if(name==='history') renderHistoryTab();
+  if(name==='settings') renderGrassSettings();
+}
+
+// ══════════════════════════════════════════
+// 초집중
+// ══════════════════════════════════════════
+let fGid=null,fTid=null,fSec=25*60,fRunning=false,fInterval=null,fSelMin=25;
+function openFocus(gid,tid){
+  fGid=gid;fTid=tid;
+  document.getElementById('focusTask').textContent=D.groups.find(g=>g.id===gid).tasks.find(t=>t.id===tid).name;
   setTime(25);
   document.getElementById('focusOverlay').classList.add('show');
   document.body.style.overflow='hidden';
 }
-function closeFocus() {
-  clearInterval(fInterval); fRunning=false; fInterval=null;
+function closeFocus(){
+  clearInterval(fInterval);fRunning=false;fInterval=null;
   document.getElementById('focusOverlay').classList.remove('show');
   document.body.style.overflow='';
   document.getElementById('focusStartBtn').textContent='▶ START';
 }
-function setTime(min) {
-  clearInterval(fInterval); fRunning=false; fInterval=null;
-  fSelMin=min; fSec=min*60;
-  updateTimerDisplay();
+function setTime(min){
+  clearInterval(fInterval);fRunning=false;fInterval=null;
+  fSelMin=min;fSec=min*60;updateTimerDisplay();
   document.getElementById('focusStartBtn').textContent='▶ START';
   document.getElementById('focusState').textContent='READY';
-  document.querySelectorAll('.f-preset').forEach(b=>{
-    b.classList.toggle('on', parseInt(b.dataset.m)===min);
-  });
+  document.querySelectorAll('.f-preset').forEach(b=>b.classList.toggle('on',parseInt(b.dataset.m)===min));
 }
-function toggleTimer() {
-  if (fRunning) {
-    clearInterval(fInterval); fRunning=false;
+function toggleTimer(){
+  if(fRunning){
+    clearInterval(fInterval);fRunning=false;
     document.getElementById('focusStartBtn').textContent='▶ RESUME';
     document.getElementById('focusState').textContent='PAUSED';
   } else {
@@ -950,10 +826,9 @@ function toggleTimer() {
     document.getElementById('focusStartBtn').textContent='⏸ PAUSE';
     document.getElementById('focusState').textContent='RUNNING...';
     fInterval=setInterval(()=>{
-      fSec--;
-      updateTimerDisplay();
-      if (fSec<=0) {
-        clearInterval(fInterval); fRunning=false;
+      fSec--;updateTimerDisplay();
+      if(fSec<=0){
+        clearInterval(fInterval);fRunning=false;
         document.getElementById('focusState').textContent='✓ DONE!';
         document.getElementById('focusStartBtn').textContent='▶ START';
         toast('⏰ 집중 완료!');
@@ -961,53 +836,36 @@ function toggleTimer() {
     },1000);
   }
 }
-function resetTimer() { setTime(fSelMin); }
-function updateTimerDisplay() {
-  const m=pad(Math.floor(fSec/60)), s=pad(fSec%60);
-  document.getElementById('focusTimer').textContent=`${m}:${s}`;
+function resetTimer(){ setTime(fSelMin); }
+function updateTimerDisplay(){
+  document.getElementById('focusTimer').textContent=`${pad(Math.floor(fSec/60))}:${pad(fSec%60)}`;
 }
-function doneTask() {
-  if (fGid && fTid) {
-    const t = D.groups.find(g=>g.id===fGid).tasks.find(t=>t.id===fTid);
-    t.done=true; t.doneAt=getTS();
-    render();
+function focusDone(){
+  if(fGid&&fTid){
+    const t=D.groups.find(g=>g.id===fGid).tasks.find(t=>t.id===fTid);
+    t.done=true;t.doneAt=getTS(); render();
   }
-  closeFocus();
-  toast('✓ 완료!');
+  closeFocus(); toast('✓ 완료!');
 }
 
-// ─── 인증 ───
-function buildCert() {
-  const lines = [`#${getMMDD()} #완료한일\n`];
+// ══════════════════════════════════════════
+// 인증 / 리스트
+// ══════════════════════════════════════════
+function buildCert(){
+  const lines=[`#${getMMDD()} #완료한일\n`];
   D.groups.forEach(g=>{
-    if (!g.tasks.length) return;
+    if(!g.tasks.length) return;
     lines.push(`✅ [${g.name}]`);
     g.tasks.filter(t=>t.done).forEach(t=>lines.push(`- [x] ${t.name}`));
     g.tasks.filter(t=>!t.done).forEach(t=>lines.push(`- [ ] ${t.name}`));
     lines.push('');
   });
-  const co = D.groups.flatMap(g=>g.tasks.filter(t=>!t.done));
-  if (co.length) { lines.push('⏩ [내일 이월]'); co.forEach(t=>lines.push(`- [ ] ${t.name}`)); }
   return lines.join('\n');
 }
-function openCert() {
-  document.getElementById('certCode').textContent = buildCert();
-  document.getElementById('certModal').classList.add('show');
-}
-function closeCert(e) {
-  if (!e || e.target===e.currentTarget || e.target.classList.contains('modal-sec-btn'))
-    document.getElementById('certModal').classList.remove('show');
-}
-function copyCert() {
-  navigator.clipboard.writeText(document.getElementById('certCode').textContent)
-    .then(()=>toast('📋 복사 완료!'));
-}
-
-// ─── 리스트업 ───
-function buildList() {
-  const lines = [`#${getMMDD()} #해야할일\n`];
+function buildList(){
+  const lines=[`#${getMMDD()} #해야할일\n`];
   D.groups.forEach(g=>{
-    if (!g.tasks.length) return;
+    if(!g.tasks.length) return;
     lines.push(`[${g.name}]`);
     g.tasks.filter(t=>!t.done).forEach(t=>lines.push(`- [ ] ${t.name}`));
     g.tasks.filter(t=>t.done).forEach(t=>lines.push(`- [x] ${t.name}`));
@@ -1015,33 +873,29 @@ function buildList() {
   });
   return lines.join('\n');
 }
-function openList() {
-  document.getElementById('listCode').textContent = buildList();
-  document.getElementById('listModal').classList.add('show');
-}
-function closeList(e) {
-  if (!e || e.target===e.currentTarget || e.target.classList.contains('modal-sec-btn'))
-    document.getElementById('listModal').classList.remove('show');
-}
-function copyList() {
-  navigator.clipboard.writeText(document.getElementById('listCode').textContent)
-    .then(()=>toast('📋 복사 완료!'));
-}
-function carryover() {
-  D.groups.forEach(g=>{ g.tasks=g.tasks.filter(t=>!t.done); });
-  render(); closeList();
-  toast('⏩ 미완료 이월 완료!');
+function openCert(){ document.getElementById('certCode').textContent=buildCert(); document.getElementById('certModal').classList.add('show'); }
+function openList(){ document.getElementById('listCode').textContent=buildList(); document.getElementById('listModal').classList.add('show'); }
+function copyCert(){ navigator.clipboard.writeText(document.getElementById('certCode').textContent).then(()=>toast('📋 복사 완료!')); }
+function copyList(){ navigator.clipboard.writeText(document.getElementById('listCode').textContent).then(()=>toast('📋 복사 완료!')); }
+function carryover(){ D.groups.forEach(g=>{g.tasks=g.tasks.filter(t=>!t.done);}); render(); modalClose('listModal'); toast('⏩ 미완료 이월!'); }
+function modalClose(id,e){
+  if(!e || e.target===e.currentTarget || e.target.classList.contains('modal-sec-btn'))
+    document.getElementById(id).classList.remove('show');
 }
 
-// ─── 토스트 ───
-function toast(msg) {
+// ══════════════════════════════════════════
+// 토스트
+// ══════════════════════════════════════════
+function toast(msg){
   const el=document.getElementById('toast');
-  el.textContent=msg;
-  el.classList.add('show');
+  el.textContent=msg; el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-// ─── 초기 실행 ───
+// ══════════════════════════════════════════
+// 초기화
+// ══════════════════════════════════════════
+document.getElementById('userDateBar').textContent=`#${getMMDD()} · ${getDateFull()}`;
 render();
 </script>
 
