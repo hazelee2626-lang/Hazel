@@ -50,6 +50,32 @@ body{font-family:'SF Mono','Monaco','Menlo','Consolas',monospace;background:var(
 .pr-g-stat{color:var(--dim);font-size:11px;min-width:72px;text-align:right;}
 .pr-prompt{color:var(--muted);margin-top:4px;}
 
+/* ── 알 영역 (진행률 카드 내) ── */
+.pr-egg-row{display:flex;align-items:center;gap:14px;padding:12px 16px 12px;border-top:1px solid #222;margin-top:4px;}
+.pr-egg-canvas-wrap{flex-shrink:0;background:#060e06;border:2px solid #1a2a1a;border-radius:6px;padding:5px;box-shadow:inset 0 0 6px rgba(0,0,0,.9),0 0 0 1px #0a180a;}
+.pr-egg-canvas{image-rendering:pixelated;image-rendering:crisp-edges;width:85px;height:80px;display:block;}
+.pr-egg-info{flex:1;}
+.pr-egg-stage{font-size:10px;color:#1db833;letter-spacing:.1em;margin-bottom:5px;font-family:'SF Mono',monospace;}
+.pr-egg-msg{font-size:11px;color:#555;line-height:1.7;white-space:pre-line;}
+
+/* ── 플로팅 알 ── */
+.float-egg{position:fixed;bottom:100px;right:14px;z-index:500;cursor:pointer;transition:transform .2s;}
+.float-egg:hover{transform:scale(1.12);}
+.float-egg:active{transform:scale(.92);}
+.float-egg-wrap{background:#060e06;border:2px solid #1a2a1a;border-radius:7px;padding:5px;box-shadow:inset 0 0 8px rgba(0,0,0,.9),0 2px 12px rgba(0,0,0,.6),0 0 0 1px #0d1a0d;}
+.float-egg-canvas{image-rendering:pixelated;image-rendering:crisp-edges;width:51px;height:48px;display:block;}
+
+/* ── 탄생 팝업 ── */
+.hatch-overlay{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.85);flex-direction:column;align-items:center;justify-content:center;}
+.hatch-overlay.show{display:flex;}
+.hatch-card{background:#111;border:1px solid #222;border-radius:14px;padding:28px 24px 22px;text-align:center;max-width:300px;width:90%;box-shadow:0 16px 60px rgba(0,0,0,.7);}
+.hatch-lcd{background:#060e06;border:2px solid #1a2a1a;border-radius:8px;padding:10px;margin:0 auto 18px;display:inline-block;box-shadow:inset 0 0 12px rgba(0,0,0,.9);}
+.hatch-canvas{image-rendering:pixelated;image-rendering:crisp-edges;width:102px;height:96px;display:block;}
+.hatch-title{font-size:13px;color:#1db833;font-family:'SF Mono',monospace;letter-spacing:.1em;margin-bottom:8px;}
+.hatch-sub{font-size:11px;color:#666;margin-bottom:20px;line-height:1.7;white-space:pre-line;}
+.hatch-close{width:100%;padding:12px;background:#1db833;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:700;color:#000;cursor:pointer;}
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:1999;}
+
 /* ── CLI 바 ── */
 .cli-bar{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dimmer);padding:8px 2px;}
 .cli-cmd{color:var(--green);}
@@ -236,6 +262,26 @@ body{font-family:'SF Mono','Monaco','Menlo','Consolas',monospace;background:var(
     </div>
     <div class="pr-body" id="prBody"></div>
   </div>
+  <!-- 플로팅 알 -->
+  <div class="float-egg" onclick="openHatchDetail()" title="알을 클릭!">
+    <div class="float-egg-wrap">
+      <canvas class="float-egg-canvas" id="floatEggCanvas" width="17" height="16"></canvas>
+    </div>
+  </div>
+
+  <!-- 탄생 오버레이 -->
+  <div class="hatch-overlay" id="hatchOverlay">
+    <div class="confetti-wrap" id="confettiWrap"></div>
+    <div class="hatch-card">
+      <div class="hatch-lcd">
+        <canvas class="hatch-canvas" id="hatchCanvas" width="17" height="16"></canvas>
+      </div>
+      <div class="hatch-title" id="hatchTitle"></div>
+      <div class="hatch-sub" id="hatchSub"></div>
+      <button class="hatch-close" onclick="closeHatch()">계속하기</button>
+    </div>
+  </div>
+
   <div class="cli-bar">
     <span><span class="cli-cmd">$</span> ls -la ~/groups/</span>
     <button class="cli-new-btn" onclick="toggleNewGroupForm()">+ mkdir new-group</button>
@@ -491,7 +537,18 @@ function renderProgress(){
       <div class="pr-bar"><div class="pr-bar-fill" style="width:${pct}%"></div></div>
       <span class="pr-pct">${pct}%</span></div><br>
     <div><div class="pr-row"><span style="color:var(--dimmer)">> group_breakdown:</span></div>${gRows}</div>
-    <div class="pr-prompt">> </div>`;
+    <div class="pr-prompt">> </div>
+    <div class="pr-egg-row">
+      <div class="pr-egg-canvas-wrap">
+        <canvas class="pr-egg-canvas" id="prEggCanvas" width="20" height="24"></canvas>
+      </div>
+      <div class="pr-egg-info">
+        <div class="pr-egg-stage" id="prEggStage"></div>
+        <div class="pr-egg-msg" id="prEggMsg"></div>
+      </div>
+    </div>`;
+  // 알 그리기는 DOM 생성 후
+  requestAnimationFrame(()=>updateEgg(pct));
 }
 
 function renderSections(){
@@ -879,6 +936,270 @@ function toast(msg){
   el.textContent=msg; el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'),2200);
 }
+
+// ══════════════════════════════════════════
+// 🥚 다마고치 LCD 픽셀 알 엔진
+// ══════════════════════════════════════════
+
+// ── LCD 팔레트 (터미널 그린 감성) ──
+const LCD = {
+  bg:  '#060e06',   // LCD 화면 배경 (거의 검정)
+  off: '#0d1f0d',   // 꺼진 픽셀 (아주 어두운 초록)
+  dim: '#124a1a',   // 중간 픽셀
+  on:  '#1db833',   // 켜진 픽셀 (밝은 초록)
+  hi:  '#5ef07a',   // 하이라이트 픽셀
+};
+
+// ── 16x16 픽셀 맵 ──
+// ' ' = LCD bg  '.' = 꺼진픽셀  '+' = 중간  '#' = 켜진  '*' = 하이라이트
+// 크랙은 ' '(빈공간)으로 표현
+
+const FRAMES = [
+
+// Stage 0 — 완전한 알 (0%)
+['.....#######.....',
+ '...###########...',
+ '..#############..',
+ '.###############.',
+ '.###############.',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '.###############.',
+ '.###############.',
+ '..#############..',
+ '...###########...',
+ '.....#######.....'],
+
+// Stage 1 — 금 1개 (1~24%)
+['.....#### ##.....',
+ '...######  ##....',
+ '..######### ##...',
+ '.##########  ####',
+ '.###############.',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '.###############.',
+ '.###############.',
+ '..#############..',
+ '...###########...',
+ '.....#######.....'],
+
+// Stage 2 — 금 여러개 (25~49%)
+['.....#### ##.....',
+ '...######  ##....',
+ '..######### ##...',
+ '.##########  ####',
+ '.#### ##########.',
+ '#####  ##########',
+ '#################',
+ '#################',
+ '#####  ##########',
+ '#################',
+ '#################',
+ '.###############.',
+ '.###############.',
+ '..#############..',
+ '...###########...',
+ '.....#######.....'],
+
+// Stage 3 — 반쪽 깨짐 (50~74%)
+['.....#### ##.....',
+ '  .######  ......',
+ '  .######## .....',
+ '  .#########.....',
+ '  ...............',
+ '  ...............',
+ '  ...............',
+ '#################',
+ '#################',
+ '#################',
+ '#################',
+ '.###############.',
+ '.###############.',
+ '..#############..',
+ '...###########...',
+ '.....#######.....'],
+
+// Stage 4 — 캐릭터 등장 (75~99%)
+['.....#### ##.....',
+ '   .#####  ......',
+ '   .....   ......',
+ '   .....   ......',
+ '   ..............',
+ '   ..#.....#.....',
+ '   ...#####......',
+ '   ....###.......',
+ '   ...#####......',
+ '#################',
+ '#################',
+ '.###############.',
+ '.###############.',
+ '..#############..',
+ '...###########...',
+ '.....#######.....'],
+
+// Stage 5 — 완전 탄생 (100%)
+['##.  .#########..',
+ '###.  .#######...',
+ ' ###.  .......###',
+ '  .###########.  ',
+ '  .###########.  ',
+ '  .#  #####  #.  ',
+ '  .# ##...## #.  ',
+ '  .###.....###.  ',
+ '  .###.###.###.  ',
+ '  .###########.  ',
+ '  .###########.  ',
+ '   .##.###.##.   ',
+ '   .#..###..#.   ',
+ '    .#.....#.    ',
+ '     .#. .#.     ',
+ '      .###.      '],
+
+];
+
+// ── 캔버스에 그리기 ──
+function drawLCD(canvas, stageIdx) {
+  if (!canvas) return;
+  const rows = FRAMES[Math.min(stageIdx, FRAMES.length - 1)];
+  const COLS = rows[0].length;
+  const ROWS = rows.length;
+
+  canvas.width  = COLS;
+  canvas.height = ROWS;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = LCD.bg;
+  ctx.fillRect(0, 0, COLS, ROWS);
+
+  for (let y = 0; y < ROWS; y++) {
+    const row = rows[y] || '';
+    for (let x = 0; x < COLS; x++) {
+      const ch = row[x] || ' ';
+      let color = null;
+      if (ch === '#') color = LCD.on;
+      else if (ch === '+') color = LCD.dim;
+      else if (ch === '.') color = LCD.off;
+      else if (ch === '*') color = LCD.hi;
+      if (color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+}
+
+// ── 스테이지 계산 ──
+function getEggStage(pct) {
+  if (pct >= 100) return 5;
+  if (pct >= 75)  return 4;
+  if (pct >= 50)  return 3;
+  if (pct >= 25)  return 2;
+  if (pct > 0)    return 1;
+  return 0;
+}
+
+const EGG_STAGES = [
+  { label: '[ EGG_INIT ]',    msg: '오늘의 알이 탄생했어요\n할일을 추가하고 클리어해봐요' },
+  { label: '[ CRACK_01  ]',   msg: '첫번째 금이 생겼어요!\n계속 할일을 완료해봐요 💪' },
+  { label: '[ CRACK_02  ]',   msg: '금이 더 많이 갔어요!\n안에서 뭔가 꿈틀거리는 것 같아요' },
+  { label: '[ BREAKING  ]',   msg: '반이나 깨졌어요!\n조금만 더 힘내요 🔥' },
+  { label: '[ HATCHING..]',   msg: '나오려고 해요!!!\n마지막 할일만 끝내봐요 🐣' },
+  { label: '[ ★ BORN ★  ]',  msg: '완전히 탄생했어요! 🎉\n오늘 하루 완벽 완료!' },
+];
+
+// ── 메인 업데이트 함수 ──
+let lastPct = -1;
+let hatchShown = false;
+
+function updateEgg(pct) {
+  const stage = getEggStage(pct);
+  const info  = EGG_STAGES[stage];
+
+  // 진행률 카드 내 알
+  drawLCD(document.getElementById('prEggCanvas'), stage);
+
+  // 플로팅 알
+  drawLCD(document.getElementById('floatEggCanvas'), stage);
+
+  // 텍스트
+  const stageEl = document.getElementById('prEggStage');
+  const msgEl   = document.getElementById('prEggMsg');
+  if (stageEl) stageEl.textContent = info.label;
+  if (msgEl)   msgEl.textContent   = info.msg;
+
+  // 탄생 이벤트
+  if (pct === 100 && lastPct !== 100 && !hatchShown) {
+    hatchShown = true;
+    setTimeout(() => showHatch(), 800);
+  }
+  lastPct = pct;
+}
+
+function openHatchDetail() {
+  const all   = D.groups.flatMap(g => g.tasks);
+  const total = all.length;
+  const done  = all.filter(t => t.done).length;
+  showHatch(total > 0 ? Math.round(done / total * 100) : 0);
+}
+
+function showHatch(pct) {
+  const all   = D.groups.flatMap(g => g.tasks);
+  const total = all.length;
+  const done  = all.filter(t => t.done).length;
+  const realPct = (pct !== undefined) ? pct : (total > 0 ? Math.round(done / total * 100) : 0);
+  const stage = getEggStage(realPct);
+  const info  = EGG_STAGES[stage];
+
+  drawLCD(document.getElementById('hatchCanvas'), stage);
+  document.getElementById('hatchTitle').textContent = info.label;
+  document.getElementById('hatchSub').textContent   = `PROGRESS: ${realPct}%\n${info.msg}`;
+
+  if (realPct === 100) launchConfetti();
+  document.getElementById('hatchOverlay').classList.add('show');
+}
+
+function closeHatch() {
+  document.getElementById('hatchOverlay').classList.remove('show');
+  document.getElementById('confettiWrap').innerHTML = '';
+}
+
+// ── 폭죽 ──
+function launchConfetti() {
+  const wrap   = document.getElementById('confettiWrap');
+  wrap.innerHTML = '';
+  const colors = ['#1db833','#5ef07a','#28c840','#febc2e','#fff','#ff5f57'];
+  for (let i = 0; i < 70; i++) {
+    const el    = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size  = 3 + Math.floor(Math.random() * 5);
+    const x     = Math.random() * 100;
+    const delay = Math.random() * 0.8;
+    const dur   = 1.5 + Math.random() * 1.5;
+    el.style.cssText = `position:absolute;left:${x}%;top:-10px;
+      width:${size}px;height:${size}px;background:${color};
+      border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+      animation:confettiFall ${dur}s ${delay}s ease-in forwards;`;
+    wrap.appendChild(el);
+  }
+}
+(function () {
+  if (document.getElementById('confettiStyle')) return;
+  const s = document.createElement('style');
+  s.id = 'confettiStyle';
+  s.textContent = `@keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}`;
+  document.head.appendChild(s);
+})();
 
 // ══════════════════════════════════════════
 // 초기화
